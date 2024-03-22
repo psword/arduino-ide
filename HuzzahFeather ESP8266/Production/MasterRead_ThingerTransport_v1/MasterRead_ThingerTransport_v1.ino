@@ -27,6 +27,9 @@ void loop() {
   if (nextPing) {
     Wire.requestFrom(I2C_SLAVE, 7);  // request 7 bytes from slave device #8
     while (Wire.available()) {  // slave may send less than requested
+      //
+      uint8_t messageType = Wire.read();
+      uint8_t messageLength = Wire.read();
       char c = Wire.read();     // receive a byte as character
       Serial.print(c);          // print the character
     }
