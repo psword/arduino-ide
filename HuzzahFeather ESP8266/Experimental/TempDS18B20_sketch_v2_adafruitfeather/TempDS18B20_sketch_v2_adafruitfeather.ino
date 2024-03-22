@@ -9,9 +9,9 @@ OneWire oneWire(ONE_WIRE_BUS);  // Setup a oneWire instance to communicate with 
 DallasTemperature sensors(&oneWire); // Pass oneWire reference to Dallas Temperature
 
 float temp = 0;                  // Variable to store temperature
-char tempChar[8];                // Character array to store temperature value as string
-String FeatherID = "F2: ";      // Device ID
-int slaveAddress = 8;           // Define slave address
+int slaveAddress = 8;           // Define slave address for I2C communication
+uint8_t messageType = 0x02;     // Example message type
+uint8_t messageLength = 8;      // Length of the message
 
 // LCD Address
 LiquidCrystal_I2C lcd(0x20, 16, 2); // I2C address 0x20, 16 columns and 2 rows
@@ -38,18 +38,11 @@ void loop(void) {
   delay(5500);                   // Wait for sensor stabilization
   sensors.requestTemperatures(); // Send command to get temperatures
   delay(1500);                   // Wait for temperature reading to stabilize
-  Serial.print("F2: ");          // Print device ID to serial monitor
-  Serial.println(sensors.getTempCByIndex(0)); // Print temperature to serial monitor
   temp = sensors.getTempCByIndex(0); // Read temperature value
+  Serial.println(temp); // Print temperature to serial monitor
   delay(5500);                   // Wait for sensor stabilization
   digitalWrite(GPIO_PIN, LOW);  // Power off the sensor
-  dtostrf(temp, 6, 2, tempChar); // Convert float to char array with 6 characters and 2 decimal places
-  // String FeatherID = "F2: ";    // Device ID
-  // Wire.beginTransmission(0);    // Start I2C transmission with slaves on broadcast address
-  // Wire.write(FeatherID.c_str()); // Send device ID
-  // Wire.write(tempChar);         // Send temperature value
-  // Wire.endTransmission();       // End transmission
-  transmitSlave();             // Transmit to slave
+  transmitSlave();              // Transmit temperature to slave device
   printValue();                 // Print temperature on LCD
   delay(5500);                  // Wait before next iteration
 }
@@ -65,10 +58,16 @@ void printValue() {
   lcd.print("deg C");           // Display temperature unit
 }
 
-// Transmit to slave
+// Transmit temperature value to slave device
 void transmitSlave() {
-  Wire.beginTransmission(slaveAddress);    // Start I2C transmission with slave (Arduino)
-  Wire.write(FeatherID.c_str()); // Send device ID
-  Wire.write(tempChar);         // Send temperature value
-  Wire.endTransmission();       // End transmission
+  Wire.beginTransmission(slaveAddress); // Start I2C transmission with slave (Arduino)
+  Wire.write(messageType);              // Send message type
+  Wire.write(messageLength);            // Send message length
+  uint8_t byteArray[sizeof(float)];    // Create byte array to store temperature
+  memcpy(byteArray, &temp, sizeof(float)); // Copy temperature value to byte array
+  for (int i = 0; i < sizeof(float); i++) {
+    Wire.write(byteArray[i]);          // Send temperature byte by byte
+  }
+  Wire.endTransmission();               // End transmission
+  Serial.println("Message Sent");       // Print status message
 }

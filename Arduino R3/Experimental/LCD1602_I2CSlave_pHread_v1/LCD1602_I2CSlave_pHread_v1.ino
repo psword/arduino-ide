@@ -4,7 +4,7 @@
 #define Offset 0.37            //deviation compensate
 #define LED 13
 #define samplingInterval 20000
-#define printInterval 5000
+#define printInterval 20000
 #define ArrayLenth  40    //times of collection
 #define POWER_PIN 8 // Define digital pin 8 as the power pin for the pH Sensor
 int pHArray[ArrayLenth];   //Store the average value of the sensor feedback
