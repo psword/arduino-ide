@@ -19,16 +19,16 @@ void setup() {
     Serial.begin(9600);    // Initialize serial communication
     pinMode(GPIO_PIN, OUTPUT); // Set GPIO PIN as OUTPUT for controlling power
     Wire.begin();          // Join I2C bus as master device (message sender)
-    lcd.init();            // Initialize the LCD
-    lcd.backlight();       // Turn on the LCD backlight
-    lcd.setCursor(0, 0);  // Set the LCD Cursor
-    lcd.print("Master - F1"); // Display device info on LCD
-    lcd.setCursor(0, 1);  // Set the LCD Cursor
-    lcd.print("FireBeetle8266 1");  // Set the LCD Cursor
-    lcd.setCursor(0, 0);  // Set the LCD Cursor
-    delay(5000);           // Wait for 5 seconds
-    lcd.print("F1-SetupComplete"); // Indicate setup completion on LCD
-    delay(1000);           // Wait for 1 second
+    // lcd.init();            // Initialize the LCD
+    // lcd.backlight();       // Turn on the LCD backlight
+    // lcd.setCursor(0, 0);  // Set the LCD Cursor
+    // lcd.print("Master - F1"); // Display device info on LCD
+    // lcd.setCursor(0, 1);  // Set the LCD Cursor
+    // lcd.print("FireBeetle8266 1");  // Set the LCD Cursor
+    // lcd.setCursor(0, 0);  // Set the LCD Cursor
+    // delay(5000);           // Wait for 5 seconds
+    // lcd.print("F1-SetupComplete"); // Indicate setup completion on LCD
+    // delay(1000);           // Wait for 1 second
 }
 
 void loop() {
