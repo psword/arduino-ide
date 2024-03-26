@@ -96,6 +96,7 @@ void setup() {
       pHValue_global = pHValue;
       }
     digitalWrite(POWER_PIN, LOW);
+    Serial.println("Setup Complete.");
     codeExecuted = true;
   }
 }
