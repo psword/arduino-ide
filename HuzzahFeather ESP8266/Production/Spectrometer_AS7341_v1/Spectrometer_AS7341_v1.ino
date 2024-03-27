@@ -14,7 +14,7 @@ void setup() {
     delay(1);
   }
 
-  // initialize digital pin LED_BUILTIN as an output.
+  // initialize digital pin LED_BUILTIN as an output
   pinMode(LED_BUILTIN, OUTPUT);
   
 
@@ -38,7 +38,6 @@ void loop() {
   // Print out the stored values for each channel
   as7341.setLEDCurrent(100); // 100mA
   as7341.enableLED(true);
-  delay(1000);
   Serial.print("F1 415nm : ");
   Serial.println(as7341.getChannel(AS7341_CHANNEL_415nm_F1));
   Serial.print("F2 445nm : ");
@@ -63,6 +62,6 @@ void loop() {
   Serial.println(as7341.getChannel(AS7341_CHANNEL_NIR));
 
   Serial.println("");
-  as7341.enableLED(false);
-  delay(3000);
+  // as7341.enableLED(false);
+  delay(500);
 }

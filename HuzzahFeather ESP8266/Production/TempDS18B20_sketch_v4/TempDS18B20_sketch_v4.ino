@@ -31,6 +31,9 @@ void setup(void) {
   Wire.begin();                              // Join I2C bus as master device (message sender)
   sensors.begin();                           // Start up the temperature sensor library
 
+  // initialize digital pin LED_BUILTIN as an output
+  pinMode(LED_BUILTIN, OUTPUT);
+
   // Perform initialization if code has not been executed before
   if (!codeExecuted) {
     int tempSenseIterations = 10;            // Number of temperature sensing iterations

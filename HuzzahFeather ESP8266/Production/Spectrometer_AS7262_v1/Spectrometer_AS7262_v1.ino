@@ -31,7 +31,7 @@ void setup() {
   Serial.begin(9600);
   while(!Serial);
   
-  // initialize digital pin LED_BUILTIN as an output.
+  // initialize digital pin LED_BUILTIN as an output
   pinMode(LED_BUILTIN, OUTPUT);
 
   //begin and make sure we can talk to the sensor
@@ -52,7 +52,7 @@ void loop() {
   //wait till data is available
   bool rdy = false;
   while(!rdy){
-    delay(5);
+    delay(500);
     rdy = ams.dataReady();
   }
   //ams.drvOff(); //uncomment this if you want to use the driver LED for readings
