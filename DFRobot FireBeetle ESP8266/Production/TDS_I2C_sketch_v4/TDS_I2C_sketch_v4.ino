@@ -71,7 +71,7 @@ void loop() {
 
     // Polling Interval Check
     if (millis() - pollingTime > POLLING_INTERVAL) {
-        Serial.println("Attempting message retrieval");
+        // Serial.println("Attempting message retrieval");
         Wire.requestFrom(I2C_SLAVE, 8); // Request 8 bytes from slave device #8
 
         while (Wire.available()) { // Slave may send less than requested
@@ -94,8 +94,8 @@ void loop() {
         }
 
         pollingTime = millis();
-        Serial.println("Received temperature value:");
-        Serial.println(receivedFloatTemp); // Print the reconstructed temperature value
+        // Serial.println("Received temperature value:");
+        // Serial.println(receivedFloatTemp); // Print the reconstructed temperature value
     }
 
     static unsigned long samplingTime = millis();
@@ -108,15 +108,9 @@ void loop() {
         Voltage = sensorValue * VC / 1024.0; // Convert analog reading to voltage
         tdsValue = (133.42 / Voltage * Voltage * Voltage - 255.86 * Voltage * Voltage + 857.39 * Voltage) * 0.5; // Convert voltage value to TDS value
         adjustedTds = adjustTds(tdsValue, receivedFloatTemp); // Calculate the adjusted TDS
-        // printValue(); // Print TDS value on LCD
         delay(5000); // Wait for sensor stabilization
         digitalWrite(GPIO_PIN, LOW); // Power off the sensor
         samplingTime = millis();
-        Serial.print("rawTDS = ");
-        Serial.println(tdsValue);
-        Serial.print("Reported Voltage on the PIN = ");
-        Serial.print(Voltage); // Print voltage to serial monitor
-        Serial.println(" volts");
     }
 
     static unsigned long sendingTime = millis();
@@ -155,5 +149,5 @@ void transmitSlave() {
     }
 
     Wire.endTransmission(); // End transmission
-    Serial.println("Message Sent"); // Print status message
+    // Serial.println("Message Sent"); // Print status message
 }
