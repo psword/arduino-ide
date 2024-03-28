@@ -177,6 +177,13 @@ void receiveEvent(int bytes) {
       memcpy(&receivedFloatValue, receivedData, sizeof(float));
       relayFloatValue = receivedFloatValue;
       }
+    if (receivedMessageType == 0x04) {
+      float receivedFloatValue;
+      // Reconstruct the float value from receivedData
+      Serial.print(receivedData);
+      memcpy(&receivedFloatValue, receivedData, sizeof(float));
+      relayFloatValue = receivedFloatValue;
+      }
   }
 }
 

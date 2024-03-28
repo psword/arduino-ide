@@ -18,11 +18,18 @@
 #include <Wire.h>
 #include "Adafruit_AS726x.h"
 
-//create the object
-Adafruit_AS726x ams;
+// Timing Intervals
+#define SAMPLING_INTERVAL 10000  // Interval for sampling
+#define SENDING_INTERVAL 5000    // Interval for sending
+#define MESSAGE_VIOLET 0x04 // Define the message code for the violet channel value
 
-//buffer to hold raw values
-uint16_t sensorValues[AS726x_NUM_CHANNELS];
+Adafruit_AS726x ams;  //create the object
+
+// Define variables
+uint16_t sensorValues[AS726x_NUM_CHANNELS]; // Buffer to hold raw values
+uint8_t messageLength = 8;  // Length of message to transmit
+int slaveAddress = 8;            // Slave device address
+uint16_t violetValue = sensorValues[AS726x_VIOLET]; // Define violet value
 
 //buffer to hold calibrated values (not used by default in this example)
 //float calibratedValues[AS726x_NUM_CHANNELS];
@@ -33,6 +40,9 @@ void setup() {
   
   // initialize digital pin LED_BUILTIN as an output
   pinMode(LED_BUILTIN, OUTPUT);
+
+  // Initialize Wire library
+  Wire.begin();
 
   //begin and make sure we can talk to the sensor
   if(!ams.begin()){
@@ -47,27 +57,56 @@ void loop() {
   uint8_t temp = ams.readTemperature();
   
   ams.drvOn(); //uncomment this if you want to use the driver LED for readings
-  ams.startMeasurement(); //begin a measurement
   
-  //wait till data is available
-  bool rdy = false;
-  while(!rdy){
-    delay(500);
-    rdy = ams.dataReady();
+  static unsigned long samplingTime = millis();
+
+  // Sampling Interval Check
+  if (millis() - samplingTime > SAMPLING_INTERVAL) {
+    ams.startMeasurement(); //begin a measurement
+    
+    //wait till data is available
+    bool rdy = false;
+    while(!rdy){
+      delay(500);
+      rdy = ams.dataReady();
+    }
+    //ams.drvOff(); //uncomment this if you want to use the driver LED for readings
+
+    //read the values!
+    ams.readRawValues(sensorValues);
+    //ams.readCalibratedValues(calibratedValues);
+    
+    uint16_t violetValue = sensorValues[AS726x_VIOLET];
+
+
+    Serial.print("Temp: "); Serial.print(temp);
+    Serial.print(" Violet: "); Serial.print(sensorValues[AS726x_VIOLET]);
+    Serial.print(" Blue: "); Serial.print(sensorValues[AS726x_BLUE]);
+    Serial.print(" Green: "); Serial.print(sensorValues[AS726x_GREEN]);
+    Serial.print(" Yellow: "); Serial.print(sensorValues[AS726x_YELLOW]);
+    Serial.print(" Orange: "); Serial.print(sensorValues[AS726x_ORANGE]);
+    Serial.print(" Red: "); Serial.print(sensorValues[AS726x_RED]);
+    Serial.println();
+    Serial.println();
+    transmitSlave();
+    samplingTime = millis();
   }
-  //ams.drvOff(); //uncomment this if you want to use the driver LED for readings
-
-  //read the values!
-  ams.readRawValues(sensorValues);
-  //ams.readCalibratedValues(calibratedValues);
-
-  Serial.print("Temp: "); Serial.print(temp);
-  Serial.print(" Violet: "); Serial.print(sensorValues[AS726x_VIOLET]);
-  Serial.print(" Blue: "); Serial.print(sensorValues[AS726x_BLUE]);
-  Serial.print(" Green: "); Serial.print(sensorValues[AS726x_GREEN]);
-  Serial.print(" Yellow: "); Serial.print(sensorValues[AS726x_YELLOW]);
-  Serial.print(" Orange: "); Serial.print(sensorValues[AS726x_ORANGE]);
-  Serial.print(" Red: "); Serial.print(sensorValues[AS726x_RED]);
-  Serial.println();
-  Serial.println();
 }
+
+// Transmit to slave
+void transmitSlave() {
+    Wire.beginTransmission(slaveAddress); // Start I2C transmission with slave (Arduino)
+    Wire.write(MESSAGE_VIOLET); // Send message type
+    Wire.write(violetValue & 0xFF); // Send message length
+    // uint8_t byteArray[sizeof(float)]; // Create byte array to store temperature
+    // memcpy(byteArray, &adjustedTds, sizeof(float)); // Copy temperature value to byte array
+
+    // for (int i = 0; i < sizeof(float); i++) {
+    //     Wire.write(byteArray[i]); // Send temperature byte by byte
+    // }
+
+    Wire.endTransmission(); // End transmission
+    Serial.println("Message Sent"); // Print status message
+    Serial.println(MESSAGE_VIOLET); // Print status message
+}
+
