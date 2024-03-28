@@ -126,7 +126,7 @@ void loop() {
 float adjustTds(float rawTDS, float temperature) {
     // Calculate temperature correction factor
     float tempCorrection = 1.0 + tempCoefficient * (temperature - referenceTemp);
-    Serial.println("Temperature Correction =");
+    Serial.print("Temperature Correction =");
     Serial.println(tempCorrection);
     // Adjust TDS reading based on temperature
     float adjustedTds = rawTDS + tempCorrection;
