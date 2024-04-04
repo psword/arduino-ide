@@ -47,7 +47,7 @@ void setup() {
 
     // Execute code only once
     if (!codeExecuted) {
-        int tdsSenseIterations = 10;
+        int tdsSenseIterations = 40;
         digitalWrite(GPIO_PIN, HIGH); // Power on the sensor
         delay(1000); // Wait for sensor stabilization
 
