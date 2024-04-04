@@ -104,8 +104,8 @@ void setup() {
 void loop() {
   static unsigned long receivedPrintTime = millis();
   if (millis() - receivedPrintTime > receivedPrintInterval) {
-      Serial.println(relayMessageFlag);
-      Serial.println(relayFloatValue);
+      // Serial.println(relayMessageFlag);  // Debugging only
+      // Serial.println(relayFloatValue);   // Debugging only
       lcd.clear();
       lcd.setCursor(0, 0); // Set cursor to position (0, 0)
       lcd.print(receivedMessageType); // Display pH header on the LCD
@@ -117,7 +117,7 @@ void loop() {
 
   static unsigned long printTime = millis();
   if (millis() - printTime > printInterval) {
-      Serial.println(pHValue_global);
+      // Serial.println(pHValue_global);    // Debugging only
       lcd.clear();
       lcd.setCursor(0, 0); // Set cursor to position (0, 0)
       lcd.print(messageType); // Display pH header on the LCD

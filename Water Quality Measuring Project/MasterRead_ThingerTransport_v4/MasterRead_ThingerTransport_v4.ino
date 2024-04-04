@@ -12,6 +12,8 @@ float receivedFloatValue;    // Variable to store received float value
 float receivedFloatpH;      // Variable to store received pH value
 float receivedFloatTemp;    // Variable to store received temperature value
 float receivedFloatTds;     // Variable to store received Tds value
+float latitude = 60.816138638727466; 
+float longitude = 23.623367909936814;
 
 ThingerESP8266 thing(USERNAME, DEVICE_ID, DEVICE_CREDENTIAL);
 
@@ -27,6 +29,8 @@ void setup() {
     out["temperature"] = receivedFloatTemp;
     out["pH"] = receivedFloatpH;
     out["Tds"] = receivedFloatTds;
+    out["latitude"] = latitude;
+    out["longitude"] = longitude;
   };
 }
 
