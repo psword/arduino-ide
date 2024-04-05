@@ -7,8 +7,8 @@
 #define sensorPin A0
 #define MAX_DATA_LENGTH 20         // Define max data for sending
 #define samplingInterval 60000
-#define receivedPrintInterval 45000      // Print of incoming samples (use for debugging)
-#define printInterval 30000           // Print of pH reading (use for debugging)
+#define receivedPrintInterval 10000      // Print of incoming samples (use for debugging)
+#define printInterval 20000           // Print of pH reading (use for debugging)
 #define Offset 0.37             // Deviation compensation for pH sensor
 #define ArrayLength  40         // Length of array for averaging pH values
 
@@ -111,7 +111,6 @@ void loop() {
 
   // Task 1: LCD Printing
   if (currentMillis - receivedPrintTime > receivedPrintInterval) {
-    lcd.clear();
     lcd.setCursor(0, 0);
     lcd.print(receivedMessageType);
     lcd.print(" Remote Msg");
@@ -199,12 +198,21 @@ void requestEvent() {
     // Send relay message
     Wire.write(receivedMessageType);
     Wire.write(receivedMessageLength);
-    uint8_t byteArray[sizeof(float)];
-    memcpy(byteArray, &relayFloatValue, sizeof(float));
-    for (int i = 0; i < sizeof(float); i++) {
-      Wire.write(byteArray[i]);
-    }
-    // Serial.println("sent remote"); // (temporary debugging only)
+
+    // Testing this method....again...for troubleshooting
+    char relayChar[8]; // create char
+    dtostrf(relayFloatValue, 8, 2, relayChar); // Convert float to char array with 8 characters and 2 decimal places
+    // sprintf(relayChar, "%f", relayFloatValue); // Convert value to string
+    Wire.write(relayChar); // Send relayChar
+    Serial.print(relayChar);
+
+    // Commented out for testing
+    // uint8_t byteArray[sizeof(float)];
+    // memcpy(byteArray, &relayFloatValue, sizeof(float));
+    // for (int i = 0; i < sizeof(float); i++) {
+    //   Wire.write(byteArray[i]);
+      // Serial.println("sent remote"); (temporary debugging only)
+    // }
     // Reset relay message flag
     relayMessageFlag = false;
     relayMessagePrint = true;
@@ -216,8 +224,7 @@ void requestEvent() {
     memcpy(byteArray, &pHValue_global, sizeof(float));
     for (int i = 0; i < sizeof(float); i++) {
       Wire.write(byteArray[i]);
-    }
-    // Serial.println("sent local"); //(temporary debugging only)
+    // Serial.println("sent local"); (temporary debugging only)
     }
   }
 }

@@ -5,9 +5,9 @@
 #define GPIO_PIN 15           // Power Port is GPIO PIN 15
 
 // Timing Intervals
-#define POLLING_INTERVAL 25000   // Interval for polling
+#define POLLING_INTERVAL 120000   // Interval for polling
 #define SAMPLING_INTERVAL 40000  // Interval for sampling
-#define SENDING_INTERVAL 5000    // Interval for sending
+#define SENDING_INTERVAL 60000    // Interval for sending
 
 // Global Variables
 int sensorValue = 0;             // Variable to store sensor value
