@@ -5,9 +5,9 @@
 #define GPIO_PIN 15           // Power Port is GPIO PIN 15
 
 // Timing Intervals
-#define POLLING_INTERVAL 25000   // Interval for polling
+#define POLLING_INTERVAL 120000   // Interval for polling
 #define SAMPLING_INTERVAL 40000  // Interval for sampling
-#define SENDING_INTERVAL 5000    // Interval for sending
+#define SENDING_INTERVAL 37000    // Interval for sending
 
 // Global Variables
 int sensorValue = 0;             // Variable to store sensor value
@@ -47,7 +47,7 @@ void setup() {
 
     // Execute code only once
     if (!codeExecuted) {
-        int tdsSenseIterations = 10;
+        int tdsSenseIterations = 40;
         digitalWrite(GPIO_PIN, HIGH); // Power on the sensor
         delay(1000); // Wait for sensor stabilization
 
@@ -60,8 +60,7 @@ void setup() {
         }
 
         digitalWrite(GPIO_PIN, LOW); // Power off the sensor
-        Serial.print("rawTDS = ");
-        Serial.println(tdsValue);
+        Serial.print("Setup Complete.");
         codeExecuted = true;
     }
 }
@@ -71,7 +70,6 @@ void loop() {
 
     // Polling Interval Check
     if (millis() - pollingTime > POLLING_INTERVAL) {
-        // Serial.println("Attempting message retrieval");
         Wire.requestFrom(I2C_SLAVE, 8); // Request 8 bytes from slave device #8
 
         while (Wire.available()) { // Slave may send less than requested
@@ -94,8 +92,6 @@ void loop() {
         }
 
         pollingTime = millis();
-        // Serial.println("Received temperature value:");
-        // Serial.println(receivedFloatTemp); // Print the reconstructed temperature value
     }
 
     static unsigned long samplingTime = millis();
@@ -126,13 +122,8 @@ void loop() {
 float adjustTds(float rawTDS, float temperature) {
     // Calculate temperature correction factor
     float tempCorrection = 1.0 + tempCoefficient * (temperature - referenceTemp);
-    Serial.print("Temperature Correction = ");
-    Serial.println(tempCorrection);
     // Adjust TDS reading based on temperature
     float adjustedTds = rawTDS + tempCorrection;
-    Serial.print("adjustedTDS = ");
-    Serial.print(adjustedTds); // Print TDS value to serial monitor
-    Serial.println(" ppm");
     return adjustedTds;
 }
 
@@ -149,5 +140,4 @@ void transmitSlave() {
     }
 
     Wire.endTransmission(); // End transmission
-    // Serial.println("Message Sent"); // Print status message
 }

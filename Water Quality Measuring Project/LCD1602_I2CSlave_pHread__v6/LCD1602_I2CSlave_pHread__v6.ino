@@ -1,14 +1,20 @@
 #include <LiquidCrystal_I2C.h>  // Library for LCD
 #include <Wire.h>               // Library for Wire transmission
 
+// Function prototypes
+void samplepH();
+double avergearray(int* arr, int number);
+void receiveEvent(int bytes);
+void requestEvent();
+
 // Constants
 #define LED 13                  // Pin for LED indicator
 #define POWER_PIN 8
 #define sensorPin A0
 #define MAX_DATA_LENGTH 20         // Define max data for sending
 #define samplingInterval 60000
-#define receivedPrintInterval 5000      // Print of incoming samples (use for debugging)
-#define printInterval 13000           // Print of pH reading (use for debugging)
+#define receivedPrintInterval 23000      // Print of incoming samples (use for debugging)
+#define printInterval 30000           // Print of pH reading (use for debugging)
 #define Offset 0.37             // Deviation compensation for pH sensor
 #define ArrayLength  40         // Length of array for averaging pH values
 
@@ -26,8 +32,10 @@ bool relayMessagePrint = false;          // Flag to indicate relay message print
 float pHValue_global = 0;                // Global pH value
 float relayFloatValue;
 bool codeExecuted = false;               // Flag for code execution
-
-
+unsigned long samplingTime = 0;           // Initialize timer
+unsigned long receivedPrintTime = 0;      // Initialize timer
+unsigned long printTime = 0;              // Initialize timer
+static bool powerOn;                      // Flag to track sensor power
 
 LiquidCrystal_I2C lcd(0x20, 16, 2); // LCD with I2C address 0x20, 16 columns and 2 rows
 
@@ -94,57 +102,67 @@ void setup() {
       pHValue = 3.5 * voltage + Offset;
       digitalWrite(LED,digitalRead(LED)^1);
       pHValue_global = pHValue;
-      }
+      delay(250);
+    }
     digitalWrite(POWER_PIN, LOW);
     Serial.println("Setup Complete.");
+    lcd.clear();
+    powerOn = false;   // Set power flag
     codeExecuted = true;
   }
 }
 
 void loop() {
-  static unsigned long receivedPrintTime = millis();
-  if (millis() - receivedPrintTime > receivedPrintInterval) {
-      Serial.println(relayMessageFlag);
-      Serial.println(relayFloatValue);
-      lcd.clear();
-      lcd.setCursor(0, 0); // Set cursor to position (0, 0)
-      lcd.print(receivedMessageType); // Display pH header on the LCD
-      lcd.setCursor(0, 1); // Set cursor to position (0, 1)
-      lcd.print(relayFloatValue);
-      relayMessagePrint = false;
-      receivedPrintTime = millis();      // Set the sampling Time
+  unsigned long currentMillis = millis(); // Current time
+
+  // Task 1: LCD Printing
+  if (currentMillis - receivedPrintTime > receivedPrintInterval) {
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print(receivedMessageType);
+    lcd.print(" Remote Msg");
+    lcd.setCursor(0, 1);
+    lcd.print(relayFloatValue);
+    lcd.print("00");
+    receivedPrintTime = currentMillis; // Update printing time
   }
 
-  static unsigned long printTime = millis();
-  if (millis() - printTime > printInterval) {
-      Serial.println(pHValue_global);
-      lcd.clear();
-      lcd.setCursor(0, 0); // Set cursor to position (0, 0)
-      lcd.print(messageType); // Display pH header on the LCD
-      lcd.setCursor(0, 1); // Set cursor to position (0, 1)
-      lcd.print(pHValue_global);
-      printTime = millis();      // Set the sampling Time
-  }
-
-  static unsigned long samplingTime = millis();
-  if (millis() -samplingTime > samplingInterval) {
-    int pHsenseIterations = 10;
-    // Turn on the power just before pH sensing
-    digitalWrite(POWER_PIN, HIGH);
-    for (int i = 0; i < pHsenseIterations; i++) {
-      // Perform pH sensing
-      static float pHValue, voltage;
-      // Collect pH readings
-      pHArray[pHArrayIndex++] = analogRead(sensorPin);
-      if (pHArrayIndex == ArrayLength) pHArrayIndex = 0;
-      voltage = avergearray(pHArray, ArrayLength) * 5.0 / 1024;
-      pHValue = 3.5 * voltage + Offset;
-      digitalWrite(LED,digitalRead(LED)^1);
-      pHValue_global = pHValue;
+  // Task 2: pH Sampling
+  if (currentMillis - samplingTime > samplingInterval) {
+    samplingTime = currentMillis; // Update sampling time
+    
+    // Initialize variables for nested timer
+    unsigned long nestedTimer = millis(); // Timer for the nested loop
+    int iterations = 0; // Number of iterations completed
+    
+    // Nested timer loop for pH sampling
+    while (iterations < 40) {
+      if (millis() - nestedTimer >= 250) { // Check if 500ms has passed
+        samplepH(); // Function to sample pH values
+        nestedTimer = millis(); // Reset nested timer
+        iterations++; // Increment iterations
+        
+        // Check if all iterations are completed
+        if (iterations >= 40) {
+          digitalWrite(POWER_PIN, LOW); // Turn off power
+          powerOn = false; // Reset power flag
+        }
       }
-    digitalWrite(POWER_PIN, LOW);
+    }
+  }
+
+  // Task 3: Periodic Printing
+  if (currentMillis - printTime > printInterval) {
+    lcd.setCursor(0, 0);
+    lcd.print(messageType);
+    lcd.print(" Local Msg ");
+    lcd.setCursor(0, 1);
+    lcd.print(pHValue_global);
+    lcd.print("00");
+    printTime = currentMillis; // Update printing time
   }
 }
+
 
 // Function to handle incoming I2C data
 void receiveEvent(int bytes) {
@@ -170,13 +188,13 @@ void receiveEvent(int bytes) {
       // Reconstruct the float value from receivedData
       memcpy(&receivedFloatValue, receivedData, sizeof(float));
       relayFloatValue = receivedFloatValue;
-  }
+    }
     if (receivedMessageType == 0x03) {
       float receivedFloatValue;
       // Reconstruct the float value from receivedData
       memcpy(&receivedFloatValue, receivedData, sizeof(float));
       relayFloatValue = receivedFloatValue;
-      }
+    }
   }
 }
 
@@ -191,8 +209,8 @@ void requestEvent() {
     memcpy(byteArray, &relayFloatValue, sizeof(float));
     for (int i = 0; i < sizeof(float); i++) {
       Wire.write(byteArray[i]);
-      // Serial.println("sent remote"); (temporary debugging only)
     }
+    // Serial.println("sent remote"); // (temporary debugging only)
     // Reset relay message flag
     relayMessageFlag = false;
     relayMessagePrint = true;
@@ -204,9 +222,26 @@ void requestEvent() {
     memcpy(byteArray, &pHValue_global, sizeof(float));
     for (int i = 0; i < sizeof(float); i++) {
       Wire.write(byteArray[i]);
-    // Serial.println("sent local"); (temporary debugging only)
+    }
+    // Serial.println("sent local"); //(temporary debugging only)
     }
   }
+
+// pH sampling function
+void samplepH() {
+
+ if (!powerOn) {
+    digitalWrite(POWER_PIN, HIGH); // Turn on power if not already on
+    powerOn = true; // Set power flag
+  }
+  
+  // Perform pH sensing
+  pHArray[pHArrayIndex++] = analogRead(sensorPin);
+  if (pHArrayIndex == ArrayLength) pHArrayIndex = 0;
+  float voltage = avergearray(pHArray, ArrayLength) * 5.0 / 1024;
+  float pHValue = 3.5 * voltage + Offset;
+  digitalWrite(LED, digitalRead(LED) ^ 1);
+  pHValue_global = pHValue;
 }
 
 // For pH reading

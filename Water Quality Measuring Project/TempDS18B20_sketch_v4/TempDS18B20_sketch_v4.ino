@@ -7,8 +7,8 @@
 #define GPIO_PIN 15              // Power Port is GPIO PIN 15
 
 // Sampling and sending intervals
-#define samplingInterval 20000   // Interval for sampling (milliseconds)
-#define sendingInterval 10000    // Interval for sending (milliseconds)
+#define samplingInterval 50000   // Interval for sampling (milliseconds)
+#define sendingInterval 30000    // Interval for sending (milliseconds)
 
 // Initialize OneWire and DallasTemperature instances
 OneWire oneWire(ONE_WIRE_BUS);             // Setup a oneWire instance to communicate with any OneWire devices
@@ -45,7 +45,7 @@ void setup(void) {
       temp = sensors.getTempCByIndex(0);     // Read temperature value
     }
     digitalWrite(GPIO_PIN, LOW);             // Power off the sensor
-    Serial.println(temp);                    // Print temperature to serial monitor
+    Serial.println("Setup Complete.");                    // Print temperature to serial monitor
     codeExecuted = true;                     // Set code execution flag
   }
 }
@@ -55,11 +55,9 @@ void loop() {
   static unsigned long samplingTime = millis(); // Set the sampling time
   if (millis() - samplingTime > samplingInterval) {
     digitalWrite(GPIO_PIN, HIGH);            // Power on the sensor
-    delay(100);                              // Wait for sensor stabilization
+    delay(5000);                              // Wait for sensor stabilization
     sensors.requestTemperatures();           // Send command to get temperatures
     temp = sensors.getTempCByIndex(0);       // Read temperature value
-    Serial.println(temp);                    // Print temperature to serial monitor
-    delay(100);                              // Wait for sensor stabilization
     digitalWrite(GPIO_PIN, LOW);             // Power off the sensor
     samplingTime = millis();                  // reset the sampling time
   }

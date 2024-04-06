@@ -1,119 +1,110 @@
+// Include necessary libraries
 #define _DISABLE_TLS_
-#define THINGER_SERIAL_DEBUG // more details at http://docs.thinger.io/arduino/
-
+#define THINGER_SERIAL_DEBUG // Enable detailed Thinger.io debugging
 #include <Wire.h>
 #include <PolledTimeout.h>
 #include <ESP8266WiFi.h>
 #include <ThingerESP8266.h>
-#include "arduino_secrets.h"
+#include "arduino_secrets.h" // Include your secret WiFi credentials
 
-const int16_t I2C_SLAVE = 8; // Define the I2C slave address
-float receivedFloatValue;    // Variable to store received float value
-float receivedFloatpH;      // Variable to store received pH value
-float receivedFloatTemp;    // Variable to store received temperature value
-float receivedFloatTds;     // Variable to store received Tds value
+// Define constants and variables
+const int16_t I2C_SLAVE = 8; // I2C slave address
+float receivedFloatValue;    // Received float value
+float receivedFloatpH;       // Received pH value
+float receivedFloatTemp;     // Received temperature value
+float receivedFloatTds;      // Received Tds value
+float latitude = 60.816138638727466; // Default latitude (testing)
+float longitude = 23.623367909936814; // Default longitude (testing)
+String localeName = "Forssa"; // Default location name (testing)
+String locationName = "HAMK"; // Default location name (testing)
+unsigned long hours;
+unsigned long minutes;
+unsigned long seconds;
 
+// Thinger.io instance
 ThingerESP8266 thing(USERNAME, DEVICE_ID, DEVICE_CREDENTIAL);
 
+// Setup function
 void setup() {
-  Serial.begin(9600); // Start serial communication for output
-  Wire.begin();  // Join the I2C bus (address optional for master)
+  Serial.begin(9600); // Initialize serial communication
+  Wire.begin();       // Initialize I2C bus
 
-  // add WiFi credentials
+  // Add WiFi credentials
   thing.add_wifi(ssid, ssid_pass);
+
+  // Set LED pin as output
+  pinMode(LED_BUILTIN, OUTPUT);
 
   // Define Thinger Resources
   thing["1000"] >> [](pson& out){
+    // Populate Thinger Resources
     out["temperature"] = receivedFloatTemp;
     out["pH"] = receivedFloatpH;
     out["Tds"] = receivedFloatTds;
+    out["latitude"] = latitude;
+    out["longitude"] = longitude;
+    out["localeName"] = localeName;
+    out["locationName"] = locationName;
+    out["hoursUptime"] = hours;
+    out["minutesUptime"] = minutes;
+    out["secondsUptime"] = seconds;
   };
 }
 
+// Main loop function
 void loop() {
-  
+  thing.handle(); // Handle Thinger.io
+
+  // Set up periodic timers
   using periodic = esp8266::polledTimeout::periodicMs;
-  static periodic nextPing(5000);
-  static periodic thingerPing(60000);
-  bool messageReceivedFlag = false;
+  static periodic nextPing(25000); // Every 25 seconds
+  static periodic uptimePing(120000); // Every 2 minutes
 
+  // Perform actions based on timers
   if (nextPing) {
-    Wire.requestFrom(I2C_SLAVE, 8); // Request 8 bytes from slave device #8
-    while (Wire.available()) { // Slave may send less than requested
-      uint8_t messageType = Wire.read(); // Read the message type byte
-      uint8_t messageLength = Wire.read(); // Read the message length byte
-      
-      Serial.print("Message Type: ");
-      Serial.println(messageType, HEX);
-      
-      Serial.print("Message Length: ");
-      Serial.println(messageLength, HEX);
+    actuateData(); // Actuate data
+  }
+  if (uptimePing) {
+    deliverUptime(); // Deliver uptime
+  }
+}
 
-      messageReceivedFlag = true;
+// Function to actuate data
+void actuateData() {
+  Wire.requestFrom(I2C_SLAVE, 8); // Request 8 bytes from slave device #8
+  while (Wire.available()) { // Process available bytes
+    uint8_t messageType = Wire.read(); // Read message type byte
+    uint8_t messageLength = Wire.read(); // Read message length byte
 
-      // This block is for message type 0x01 (pH value)
-      if (messageType == 0x01 && messageLength == 8) {
-        Serial.println("Received pH value:");
-        uint8_t byteArray[sizeof(float)]; // Create an array to store the bytes of the float
-        for (int i = 0; i < messageLength; i++) {
-          byteArray[i] = Wire.read(); // Read bytes of the message body into byteArray
-        }
-        // Reconstruct the float value from byteArray
-        float *ptr = reinterpret_cast<float*>(byteArray); // Type punning
-        receivedFloatValue = *ptr; // Assign the reconstructed float value
-        receivedFloatpH = receivedFloatValue;
-        Serial.println(messageType, HEX);
-        Serial.println(messageLength);
-        Serial.println(receivedFloatpH); // Print the reconstructed pH value
-      }
-
-      // This block is for message type 0x02 (temperature value)
-      if (messageType == 0x02 && messageLength == 8) {
-        Serial.println("Received temperature value:");
-        uint8_t byteArray[sizeof(float)]; // Create an array to store the bytes of the float
-        for (int i = 0; i < messageLength; i++) {
-          byteArray[i] = Wire.read(); // Read bytes of the message body into byteArray
-        }
-        // Reconstruct the float value from byteArray
-        float *ptr = reinterpret_cast<float*>(byteArray); // Type punning
-        receivedFloatValue = *ptr; // Assign the reconstructed float value
-        receivedFloatTemp = receivedFloatValue;
-        Serial.println(messageType, HEX);
-        Serial.println(messageLength);
-        Serial.println(receivedFloatTemp); // Print the reconstructed temperature value
-
-      // This block is for message type 0x03 (tds value)
-      if (messageType == 0x03 && messageLength == 8) {
-        Serial.println("Received Tds value:");
-        uint8_t byteArray[sizeof(float)]; // Create an array to store the bytes of the float
-        for (int i = 0; i < messageLength; i++) {
-          byteArray[i] = Wire.read(); // Read bytes of the message body into byteArray
-        }
-        // Reconstruct the float value from byteArray
-        float *ptr = reinterpret_cast<float*>(byteArray); // Type punning
-        receivedFloatValue = *ptr; // Assign the reconstructed float value
-        receivedFloatTds = receivedFloatValue;
-        Serial.println(messageType, HEX);
-        Serial.println(messageLength);
-        Serial.println(receivedFloatTds); // Print the reconstructed temperature value
-      } else {
-        Serial.println("Received Unknown value:");
-        uint8_t byteArray[sizeof(float)]; // Create an array to store the bytes of the float
-        for (int i = 0; i < messageLength; i++) {
-          byteArray[i] = Wire.read(); // Read bytes of the message body into byteArray
-        }
-        // Reconstruct the float value from byteArray
-        float *ptr = reinterpret_cast<float*>(byteArray); // Type punning
-        receivedFloatValue = *ptr; // Assign the reconstructed float value
-        Serial.println(receivedFloatValue); // Print the reconstructed temperature value
-      }
+    // Process message based on type and length
+    if (messageType == 0x01 && messageLength == 8) {
+      receivedFloatpH = readFloatFromWire(); // Read pH value
+    }
+    if (messageType == 0x02 && messageLength == 8) {
+      receivedFloatTemp = readFloatFromWire(); // Read temperature value
+    }
+    if (messageType == 0x03 && messageLength == 8) {
+      receivedFloatTds = readFloatFromWire(); // Read Tds value
     }
   }
+}
 
-  Serial.println(messageReceivedFlag);
+// Function to deliver uptime
+void deliverUptime() {
+  unsigned long uptimeMillis = millis(); // Get uptime in milliseconds
+  hours = uptimeMillis / (1000UL * 60UL * 60UL); // Calculate hours
+  uptimeMillis %= (1000UL * 60UL * 60UL);
+  minutes = uptimeMillis / (1000UL * 60UL); // Calculate minutes
+  uptimeMillis %= (1000UL * 60UL);
+  seconds = uptimeMillis / 1000UL; // Calculate seconds
 }
-if (thingerPing) {
-  // Thinger handler
-  thing.handle();
-}
+
+// Function to read a float from I2C bus
+float readFloatFromWire() {
+  uint8_t byteArray[sizeof(float)]; // Create byte array to store float bytes
+  for (int i = 0; i < sizeof(float); i++) {
+    byteArray[i] = Wire.read(); // Read bytes into array
+  }
+  float* ptr = reinterpret_cast<float*>(byteArray); // Type punning to float pointer
+  return *ptr; // Return reconstructed float value
 }
