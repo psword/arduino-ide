@@ -1,13 +1,19 @@
 #include <LiquidCrystal_I2C.h>  // Library for LCD
 #include <Wire.h>               // Library for Wire transmission
 
+// Function prototypes
+void samplepH();
+double avergearray(int* arr, int number);
+void receiveEvent(int bytes);
+void requestEvent();
+
 // Constants
 #define LED 13                  // Pin for LED indicator
 #define POWER_PIN 8
 #define sensorPin A0
 #define MAX_DATA_LENGTH 20         // Define max data for sending
 #define samplingInterval 60000
-#define receivedPrintInterval 45000      // Print of incoming samples (use for debugging)
+#define receivedPrintInterval 23000      // Print of incoming samples (use for debugging)
 #define printInterval 30000           // Print of pH reading (use for debugging)
 #define Offset 0.37             // Deviation compensation for pH sensor
 #define ArrayLength  40         // Length of array for averaging pH values
@@ -220,7 +226,6 @@ void requestEvent() {
     // Serial.println("sent local"); //(temporary debugging only)
     }
   }
-}
 
 // pH sampling function
 void samplepH() {
