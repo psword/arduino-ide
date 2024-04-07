@@ -1,0 +1,24 @@
+        +------------------------+
+        |       setup()          |
+        +------------------------+
+                    |
+                    v
++------------------------------------+
+| Initialize Serial Communication   |
+| Set GPIO PIN as OUTPUT             |
+| Initialize Wire library            |
+| Calibrate TDS Sensor              |
+| Power off the Sensor               |
++------------------------------------+
+                    |
+                    v
++------------------------------------+
+|           Continuous Loop          |
+|        Polling Interval Check      |
+|        Sampling Interval Check     |
+|        Sending Interval Check      |
+|           Adjust TDS               |
+|           Transmit to Slave       |
++------------------------------------+
+
+*composed with generative AI and human reviewed

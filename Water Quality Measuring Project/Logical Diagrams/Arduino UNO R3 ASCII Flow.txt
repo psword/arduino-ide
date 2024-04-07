@@ -1,0 +1,25 @@
+        +------------------------+
+        |       setup()          |
+        +------------------------+
+                    |
+                    v
++-------------------------------------+
+| Initialize I2C Communication        |
+| Register I2C Event Handlers         |
+| Set Pin Modes                       |
+| Initialize Serial and LCD           |
+| Display Information on LCD          |
++-------------------------------------+
+                    |
+          +---------+----------+
+          |                    |
+          v                    v
++-------------------------+ +---------------------------+ +----------------------+
+|         Continuous Loop   |       Sample pH           |     Handle I2C         |
+|    Print Remote Messages  |    Turn on Power          |    Read and Process    |
+|    Sample pH Values       |    Sample pH Values       |    Incoming Data       |
+|    Print Local Messages   |    Calculate pH           |    Outgoing Data       |
++-------------------------+ +---------------------------+ +----------------------+
+
+*composed with generative AI and human reviewed
+

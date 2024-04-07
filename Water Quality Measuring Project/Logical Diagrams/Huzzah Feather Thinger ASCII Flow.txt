@@ -1,0 +1,30 @@
+        +------------------------+
+        |       setup()          |
+        +------------------------+
+                    |
+                    v
++------------------------------------+
+| Initialize Serial and I2C          |
+| Add WiFi Credentials               |
+| Define Thinger Resources           |
++------------------------------------+
+                    |
+                    v
++------------------------------------+
+|         Continuous Loop            |
+|    Handle Thinger.io               |
+|    Set Up Periodic Timers          |
+|    Perform Actions Based on Timers |
++------------------------------------+
+                    |
+          +---------+-----------+
+          |                     |
+          v                     v
++-----------------------+ +-------------------------+
+|    Actuate Data       | |     Deliver Uptime      |
+|    Request and Process| |     Calculate Uptime    |
+|    I2C Data           | |     Update Uptime Data  |
++-----------------------+ +-------------------------+
+
+*composed with generative AI and human reviewed
+
