@@ -8,23 +8,16 @@
 | Add WiFi Credentials               |
 | Define Thinger Resources           |
 +------------------------------------+
-                    |
-                    v
-+------------------------------------+
-|         Continuous Loop            |
-|    Handle Thinger.io               |
-|    Set Up Periodic Timers          |
-|    Perform Actions Based on Timers |
-+------------------------------------+
-                    |
-          +---------+-----------+
-          |                     |
-          v                     v
-+-----------------------+ +-------------------------+
-|    Actuate Data       | |     Deliver Uptime      |
-|    Request and Process| |     Calculate Uptime    |
-|    I2C Data           | |     Update Uptime Data  |
-+-----------------------+ +-------------------------+
+          loop      |                   functions          
+          +---------+---------------------------+
+          |                                     |
+          v                                     v
++------------------------------------+ +-----------------------+-------------------------+
+|         Continuous Loop            | |   Actuate Data        |     Deliver Uptime      |
+|    Handle Thinger.io               | |   Request and Process |     Calculate Uptime    |
+|    Set Up Periodic Timers          | |   I2C Data            |     Update Uptime Data  |
+|    Perform Actions Based on Timers | |                       |                         |
++------------------------------------+ +-----------------------+-------------------------+
 
 *composed with generative AI and human reviewed
 
