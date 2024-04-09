@@ -14,13 +14,13 @@
                     +-----------------------------+
                     |                             |
                     v                             v
-+--------------------------------------+ +----------------------------------+ +----------------------------------+
-|           Continuous Loop            | |          Adjust TDS              | |           Transmit to Slave      |
-|Polling Interval Check for Temperature| |         Calculate new TDS        | |         Transmit data to I2C     |                                 
-|        Sampling Interval Check       | |  based on Temperature adjustment | |         slave based on Timer     |
-|        Sending Interval Check        | |                                  | |                                  |
-|           Adjust TDS                 | |                                  | |                                  |
-|           Transmit to Slave          | |                                  | |                                  |
-+--------------------------------------+ +----------------------------------+ +----------------------------------+
++--------------------------------------+ +----------------------------------+----------------------------------+
+|           Continuous Loop            | |          Adjust TDS              |           Transmit to Slave      |
+|Polling Interval Check for Temperature| |         Calculate new TDS        |         Transmit data to I2C     |                                 
+|        Sampling Interval Check       | |  based on Temperature adjustment |         slave based on Timer     |
+|        Sending Interval Check        | |                                  |                                  |
+|           Adjust TDS                 | |                                  |                                  |
+|           Transmit to Slave          | |                                  |                                  |
++--------------------------------------+ +----------------------------------+----------------------------------+
 
 *composed with generative AI and human reviewed
