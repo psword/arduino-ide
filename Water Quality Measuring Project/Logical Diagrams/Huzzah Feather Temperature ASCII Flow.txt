@@ -10,13 +10,16 @@
 | Initialize DallasTemperature instance |
 | Perform Temperature Sensing           |
 +---------------------------------------+
-                    |
-                    v
-+---------------------------------------+
-|          Continuous Loop              |
-|      Sampling Temperature             |
-|      Sending Temperature              |
-+---------------------------------------+
+                    loop            |   functions
+                    +---------------+------------
+                    |                           |
+                    v                           v
++---------------------------------------+  +----------------------------------+
+|          Continuous Loop              |  |           Transmit to Slave      |
+|      Sampling Temperature             |  |         Transmit data to I2C     |  
+|      Sending Temperature              |  |         slave based on Timer     |
++---------------------------------------+  +----------------------------------+
+
 
 *composed with generative AI and human reviewed
 
