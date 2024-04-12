@@ -36,7 +36,7 @@ void setup(void) {
 
   // Perform initialization if code has not been executed before
   if (!codeExecuted) {
-    int tempSenseIterations = 10;            // Number of temperature sensing iterations
+    int tempSenseIterations = 30;            // Number of temperature sensing iterations
 
     delay(500);                              // Wait for sensor stabilization
     for (int i = 0; i < tempSenseIterations; i++) {
@@ -75,10 +75,13 @@ void transmitSlave() {
   Wire.beginTransmission(slaveAddress);       // Start I2C transmission with slave (Arduino)
   Wire.write(messageType);                    // Send message type
   Wire.write(messageLength);                  // Send message length
+  
   uint8_t byteArray[sizeof(float)];          // Create byte array to store temperature
   memcpy(byteArray, &temp, sizeof(float));    // Copy temperature value to byte array
+  
   for (int i = 0; i < sizeof(float); i++) {
     Wire.write(byteArray[i]);                 // Send temperature byte by byte
   }
+  
   Wire.endTransmission();                     // End transmission
 }
