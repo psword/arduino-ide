@@ -15,7 +15,7 @@
 
 // Global Variables
 float adjustedTds = 0;           // Adjusted TDS calculation
-float VC = 3.3;                   // voltage Constant
+float VC = 3.3;                  // voltage Constant
 int slaveAddress = 8;            // Slave device address
 bool codeExecuted = false;       // Flag for code execution
 const int16_t I2C_SLAVE = 8;     // I2C slave address
@@ -23,10 +23,8 @@ float receivedFloatValue;        // Received float value
 float receivedFloatTemp;         // Received temperature value
 uint8_t messageType = 0x03;      // Message type
 uint8_t messageLength = 8;       // Message length
-int analogBuffer[tdsSenseIterations];     // store the analog value in the array, read from ADC
-int analogBufferTemp[tdsSenseIterations];
-int analogBufferIndex = 0;
-int copyIndex = 0;
+float analogBuffer[tdsSenseIterations];     // store the analog value in the array, read from ADC
+int analogBufferIndex = 0;       // Index for circular buffer
 
 // Constants for temperature coefficient calculation
 const float tempCoefficient = 0.02;  // 2% Coefficient calculation
@@ -35,11 +33,13 @@ const float referenceTemp = 25.0;    // Reference temperature for calibration
 // Function Prototypes
 void setup();
 void loop();
-int getMedianNum(int bArray[], int iFilterLen);
 float adjustTds(float sensor, float temperature);
+float computeMedian();
 void transmitSlave();
 void startSensor();
 void stopSensor();
+void actuateData();
+float readFloatFromWire(uint8_t length);
 
 // Configure State Machine
 enum SensorState {
@@ -166,20 +166,21 @@ float readFloatFromWire(uint8_t length) {
 
 // Function to read analog value from sensor and store in buffer
 void analogReadAction() {
-    int sensorValue = analogRead(SENSOR_INPUT_PIN);
+    float sensorValue = analogRead(SENSOR_INPUT_PIN);
     // Serial.println(sensorValue); // Uncomment for debugging
     analogBuffer[analogBufferIndex] = sensorValue;
     analogBufferIndex = (analogBufferIndex + 1) % tdsSenseIterations; // Circular buffer       
 }
 
 // Function to compute median value from buffer
-int computeMedian() {
-    int sortedBuffer[tdsSenseIterations];
-    memcpy(sortedBuffer, analogBuffer, tdsSenseIterations * sizeof(int));
+float computeMedian() {
+    float sortedBuffer[tdsSenseIterations];
+    memcpy(sortedBuffer, analogBuffer, tdsSenseIterations * sizeof(float));
     std::sort(sortedBuffer, sortedBuffer + tdsSenseIterations);
     
     if (tdsSenseIterations % 2 == 0) {
-        return (sortedBuffer[tdsSenseIterations / 2 - 1] + sortedBuffer[tdsSenseIterations / 2]) / 2;
+        float median = (sortedBuffer[tdsSenseIterations / 2 - 1] + sortedBuffer[tdsSenseIterations / 2]) / 2.0f;
+        return median;
     } else {
         return sortedBuffer[tdsSenseIterations / 2];
     }
@@ -200,7 +201,7 @@ float adjustTds(float voltage, float temperature) {
 // Combined function for reading analog value and adjusting TDS
 float readAndAdjustTds(float temperature) {
     analogReadAction();
-    int medianSensorValue = computeMedian();
+    float medianSensorValue = computeMedian();
     float averageVoltage = medianSensorValue * VC / 1024.0;
     return adjustTds(averageVoltage, temperature);
 }
