@@ -24,6 +24,11 @@ unsigned long seconds;
 // Thinger.io instance
 ThingerESP8266 thing(USERNAME, DEVICE_ID, DEVICE_CREDENTIAL);
 
+// Function prototypes
+void actuateData();
+void deliverUptime();
+float readFloatFromWire();
+
 // Setup function
 void setup() {
   Serial.begin(9600); // Initialize serial communication
