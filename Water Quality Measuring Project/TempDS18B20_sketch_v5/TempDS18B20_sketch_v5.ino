@@ -38,6 +38,16 @@ enum SensorState {
 SensorState currentState = SENSOR_OFF;
 unsigned long stateStartTime = 0;
 
+// Function prototypes
+void setup(void);
+void loop();
+void startSensor();
+void stopSensor();
+void analogReadAction();
+float computeMedian();
+float readAndAdjustTemp();
+void transmitSlave();
+
 void setup(void) {
   Serial.begin(9600);                        // Start serial port for debugging
   // Wait for serial port to connect
