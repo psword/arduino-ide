@@ -6,6 +6,7 @@
 #include <ESP8266WiFi.h>
 #include <ThingerESP8266.h>
 #include "arduino_secrets.h" // Include your secret WiFi credentials
+#include "UptimeCalculator.h" // Include UptimeCalculator Library
 
 // Define constants and variables
 const int16_t I2C_SLAVE = 8; // I2C slave address
@@ -50,9 +51,9 @@ void setup() {
     out["longitude"] = longitude;
     out["localeName"] = localeName;
     out["locationName"] = locationName;
-    out["hoursUptime"] = hours;
-    out["minutesUptime"] = minutes;
-    out["secondsUptime"] = seconds;
+    out["hoursUptime"] = uptime.getHours();
+    out["minutesUptime"] = uptime.getMinutes();
+    out["secondsUptime"] = uptime.getSeconds();
   };
 }
 
@@ -70,7 +71,7 @@ void loop() {
     actuateData(); // Actuate data
   }
   if (uptimePing) {
-    deliverUptime(); // Deliver uptime
+    uptime.updateUptime(); // Update uptime
   }
 }
 
@@ -92,16 +93,6 @@ void actuateData() {
       receivedFloatTds = readFloatFromWire(); // Read Tds value
     }
   }
-}
-
-// Function to deliver uptime
-void deliverUptime() {
-  unsigned long uptimeMillis = millis(); // Get uptime in milliseconds
-  hours = uptimeMillis / (1000UL * 60UL * 60UL); // Calculate hours
-  uptimeMillis %= (1000UL * 60UL * 60UL);
-  minutes = uptimeMillis / (1000UL * 60UL); // Calculate minutes
-  uptimeMillis %= (1000UL * 60UL);
-  seconds = uptimeMillis / 1000UL; // Calculate seconds
 }
 
 // Function to read a float from I2C bus
