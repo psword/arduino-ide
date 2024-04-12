@@ -13,11 +13,10 @@
           |                                     |
           v                                     v
 +------------------------------------+ +-----------------------+-------------------------+
-|         Continuous Loop            | |   Actuate Data        |     Deliver Uptime      |
+|    Continuous Loop                 | |   Actuate Data        |     Deliver Uptime      |
 |    Handle Thinger.io               | |   Request and Process |     Calculate Uptime    |
 |    Set Up Periodic Timers          | |   I2C Data            |     Update Uptime Data  |
 |    Perform Actions Based on Timers | |                       |                         |
 +------------------------------------+ +-----------------------+-------------------------+
 
-*composed with generative AI and human reviewed
 

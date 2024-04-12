@@ -1,25 +1,48 @@
-         +-------------------------+
-         |        setup()          |
-         +-------------------------+
-                    |
-                    v
-+---------------------------------------+
-| Initialize Serial Communication       |
-| Set GPIO PIN as OUTPUT                |
-| Initialize OneWire instance           |
-| Initialize DallasTemperature instance |
-| Perform Temperature Sensing           |
-+---------------------------------------+
-                    loop            |   functions
-                    +---------------+------------
-                    |                           |
-                    v                           v
-+---------------------------------------+  +----------------------------------+
-|          Continuous Loop              |  |           Transmit to Slave      |
-|      Sampling Temperature             |  |         Transmit data to I2C     |  
-|      Sending Temperature              |  |         slave based on Timer     |
-+---------------------------------------+  +----------------------------------+
++---------------------------------------------------+
+|                      setup()                      |
++---------------------------------------------------+
+|                                                   |
+|    Initialize Serial Communication                |
+|    Set GPIO PIN as OUTPUT                         |
+|    Initialize OneWire instance                    |
+|    Initialize DallasTemperature instance          |
+|    Initialize Wire library                        |
+|    Print "Setup Complete."                        |
+|                                                   |
++-------------------------+-------------------------+
+                          |
+                          +--------------------------------------------+
+                          |                                            |
+                          v                                            v
++---------------------------------------------------+   +---------------------------------------------+
+|                 Continuous Loop                   |   |              Sensor Functions               |
++---------------------------------------------------+   +---------------------------------------------+
+|                                                   |   |     startSensor()                           |
+|    Sampling Temperature, Sending Temperature      |   |     stopSensor()                            |
+|                                                   |   |     analogReadAction()                      |
+|                                                   |   |     computeMedian()                         |
+|    +---------------------------------------------+|   |     readAndAdjustTds()                      |
+|    |              State Machine                  ||   |     transmitSlave()                         |
+|    |                                             ||   |                                             |
+|    |         +-----------+                       ||   |                                             |
+|    |         |  SENSOR   |                       ||   +---------------------------------------------+ 
+|    |         |    OFF    |                       ||
+|    |         |           |                       ||
+|    |         +-----------+                       ||
+|    |              |                              ||
+|    |              v                              ||
+|    |         +-----------+                       ||
+|    |         | SENSOR                            ||
+|    |         |   INIT    |  SENSOR_INIT          ||
+|    |         +-----------+  SENSOR_STABILIZE     ||
+|    |              |                              ||
+|    |              v                              ||
+|    |         +-----------+                       ||
+|    |         | SENSOR    |                       ||
+|    |         |STABILIZE  |  SENSOR_READ          ||
+|    |         +-----------+  SENSOR_SHUTDOWN      ||
+|    +---------------------------------------------+|                          
+|                                                   |
++-------------------------+-------------------------+                         
 
-
-*composed with generative AI and human reviewed
 
