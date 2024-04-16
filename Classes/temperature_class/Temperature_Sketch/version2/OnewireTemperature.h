@@ -1,14 +1,14 @@
 class TemperatureSensor {
 private:
-    static const int tempSenseIterations = 40; // number of measurements to take
+    const int tempSenseIterations; // number of measurements to take
     OneWire oneWire;
     DallasTemperature sensors;
-    float analogBuffer[tempSenseIterations]; // Static array for buffer
+    std::vector<float> analogBuffer; // Use std::vector instead of raw array
     int analogBufferIndex;
 
 public:
-   // Constructor
-    TemperatureSensor(int oneWirePin) : oneWire(oneWirePin), sensors(&oneWire), analogBufferIndex(0) {}
+    // Constructor
+    TemperatureSensor(int oneWirePin, int iterations) : oneWire(oneWirePin), tempSenseIterations(iterations),sensors(&oneWire), analogBufferIndex(0) {}
 
     // Function to initialize the sensors object
     void beginSensors() {
@@ -25,9 +25,8 @@ public:
 
     // Function to compute median temperature from buffer
     float computeMedian() {
-        float sortedBuffer[tempSenseIterations]; // Temporary array for sorting
-        std::copy(analogBuffer, analogBuffer + tempSenseIterations, sortedBuffer);
-        std::sort(sortedBuffer, sortedBuffer + tempSenseIterations);
+        std::vector<float> sortedBuffer = analogBuffer;
+        std::sort(sortedBuffer.begin(), sortedBuffer.end()); // Use begin() and end() iterators
 
         if (tempSenseIterations % 2 == 0) {
             float median = (sortedBuffer[tempSenseIterations / 2 - 1] + sortedBuffer[tempSenseIterations / 2]) / 2.0f;
