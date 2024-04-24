@@ -1,2 +1,7 @@
 arduino_secrets.h
 donotupload.h
+.vscode
+arduino.json
+c_cpp_properties.json
+launch.json
+settings.json
