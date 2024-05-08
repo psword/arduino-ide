@@ -9,29 +9,36 @@ private:
     const int SENSOR_INPUT_PIN; // Define the input PIN
     
     float VC; // the voltage on the pin powering the sensor
-    float analogBuffer[tempSenseIterations]; // Static array for buffer
+    float* analogBuffer; // Dynamic array for buffer
     int analogBufferIndex; // Index for the circular buffer
     
 public:
     // Constructor
-    TdsSensor(float voltageConstant, float kCoeff, float refTemp, int iterations, float maxADC, int inputPin) 
-    : VC(voltageConstant), kCoefficient(kCoeff), referenceTemp(refTemp), tdsSenseIterations(iterations), maxADCValue(maxADC), SENSOR_INPUT_PIN(inputPin), analogBuffer(iterations), analogBufferIndex(0) {
-    // Initialize any additional necessary variables or perform setup here
+    TdsSensor(float voltageConstant, float kCoeff, float refTemp, float maxADC, int inputPin, int iterations = 10) 
+    : VC(voltageConstant), kCoefficient(kCoeff), referenceTemp(refTemp), maxADCValue(maxADC), SENSOR_INPUT_PIN(inputPin), tdsSenseIterations(iterations), analogBufferIndex(0) {
+        // Allocate memory for the analog buffer
+        analogBuffer = new float[tdsSenseIterations];
+    }
+
+    // Destructor
+    ~TdsSensor() {
+        // Deallocate memory for the analog buffer
+        delete[] analogBuffer;
     }
 
     // Function to read analog value from sensor and store in buffer
     void analogReadAction() {
         float sensorValue = analogRead(SENSOR_INPUT_PIN);
-        Serial.println(sensorValue); // Uncomment for debugging
+        // Serial.println(sensorValue); // Uncomment for debugging
         analogBuffer[analogBufferIndex] = sensorValue;
         analogBufferIndex = (analogBufferIndex + 1) % tdsSenseIterations; // Circular buffer       
     }
 
     // Function to compute median reading from buffer
     float computeMedian() {
-        float sortedBuffer[tempSenseIterations]; // Temporary array for sorting
-        std::copy(analogBuffer, analogBuffer + tempSenseIterations, sortedBuffer);
-        std::sort(sortedBuffer, sortedBuffer + tempSenseIterations);
+        float sortedBuffer[tdsSenseIterations]; // Temporary array for sorting
+        std::copy(analogBuffer, analogBuffer + tdsSenseIterations, sortedBuffer);
+        std::sort(sortedBuffer, sortedBuffer + tdsSenseIterations);
 
         if (tdsSenseIterations % 2 == 0) {
             float median = (sortedBuffer[tdsSenseIterations / 2 - 1] + sortedBuffer[tdsSenseIterations / 2]) / 2.0f;
