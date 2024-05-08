@@ -1,14 +1,23 @@
 class TemperatureSensor {
 private:
-    static const int tempSenseIterations = 10; // number of measurements to take
+    const int tempSenseIterations; // number of measurements to take
     OneWire oneWire;
     DallasTemperature sensors;
-    float analogBuffer[tempSenseIterations]; // Static array for buffer
-    int analogBufferIndex;
+    float* analogBuffer; // Dynamic array for buffer
+    int analogBufferIndex; // Index for the circular buffer
 
 public:
    // Constructor
-    TemperatureSensor(int oneWirePin) : oneWire(oneWirePin), sensors(&oneWire), analogBufferIndex(0) {}
+    TemperatureSensor(int oneWirePin, int iterations = 10) : oneWire(oneWirePin), sensors(&oneWire), tempSenseIterations(iterations), analogBufferIndex(0) {
+        // Allocate memory for the analog buffer
+        analogBuffer = new float[tempSenseIterations];
+    }
+
+    // Destructor
+    ~TemperatureSensor() {
+        // Deallocate memory for the analog buffer
+        delete[] analogBuffer;
+    }
 
     // Function to initialize the sensors object
     void beginSensors() {
