@@ -4,19 +4,27 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
 #include "OnewireTemperature.h"  // Temperature Sensor Class
+#include "AnalogTds.h" // TDS sensor class
 
 // Pin definitions
-#define ONE_WIRE_BUS 2           // Data wire is plugged into port 2 on the Feather
-#define GPIO_PIN 15              // Power Port is GPIO PIN 15
+#define ONE_WIRE_BUS 2           // Data wire is plugged into port 2
+#define TEMP_GPIO_PIN 15              // Power Port is GPIO PIN 15
+#define TDS_SENSOR_BUS 4   // Data Wire is plugged into port 4
+#define TDS_GPIO_PIN 16             // Power Port is GPIO PIN 15
 
 // Sampling and sending intervals
-#define samplingInterval 15000   // Interval for sampling (milliseconds)
+#define samplingInterval 30000   // Interval for sampling (milliseconds)
 
 // Global variables
 float adjustedTemp = 0;         // Variable to store temperature
+float adjustedTds = 0;           // Adjusted TDS calculation
 bool codeExecuted = false;      // Flag for code execution
 
-// Configure State Machine
+// Define sampling intervals for temperature and TDS sensors
+#define SAMPLING_INTERVAL 30000   // Interval for temperature sampling (milliseconds)
+#define READING_DURATION 12000    // Interval for TDS sampling (milliseconds)
+
+// Define state machine states for each sensor
 enum SensorState {
     SENSOR_OFF,
     SENSOR_INIT,
@@ -25,16 +33,34 @@ enum SensorState {
     SENSOR_SHUTDOWN
 };
 
-SensorState currentState = SENSOR_OFF;
-unsigned long stateStartTime = 0;
+SensorState tempSensorState = SENSOR_OFF;
+SensorState tdsSensorState = SENSOR_OFF;
+
+unsigned long tempStateStartTime = 0;
+unsigned long tdsStateStartTime = 0;
 
 // Function prototypes
-void startSensor();
-void stopSensor();
-void transmitSlave();
+void startTemperatureSensor();
+void stopTemperatureSensor();
+void startTDSSensor();
+void stopTDSSensor();
+void temperatureSensorStateMachine();
+void tdsSensorStateMachine();
 
 // Create an instance of TemperatureSensor (onewire PIN, number of samples)
+// Using the default value (10) for tempSenseIterations
 TemperatureSensor tempSensor(ONE_WIRE_BUS);
+
+// Providing a custom value for tempSenseIterations (e.g., 15)
+// TemperatureSensor tempSensor(ONE_WIRE_BUS, 15);
+
+// Create an instance of TemperatureSensor (voltage, kCoefficient, reference temp, GPIO PIN, number of samples)
+
+// Using the default value (10) for tdsSenseIterations
+TdsSensor tdsSensorInstance(3.3, 0.02, 25.0, 1024.0, TDS_SENSOR_BUS);
+
+// Providing a custom value for tdsSenseIterations (e.g., 15)
+// TdsSensor tdsSensorInstance(3.3, 0.02, 25.0, 1024.0, TDS_SENSOR_BUS, 15);
 
 void setup() {
   Serial.begin(9600);                        // Start serial port for debugging
@@ -42,7 +68,10 @@ void setup() {
   while (!Serial) {
     ;
   }
-  pinMode(GPIO_PIN, OUTPUT);                 // Set GPIO PIN as OUTPUT for controlling power
+  pinMode(TEMP_GPIO_PIN, OUTPUT);                 // Set GPIO PIN as OUTPUT for controlling power
+  pinMode(TDS_GPIO_PIN, OUTPUT);                 // Set GPIO PIN as OUTPUT for controlling power
+  pinMode(ONE_WIRE_BUS, INPUT);                 // Set GPIO PIN as INPUT for reading data
+  pinMode(TDS_SENSOR_BUS, INPUT);                 // Set GPIO PIN as INPUT for reading data
   Wire.begin();                              // Join I2C bus as master device (message sender)
   tempSensor.beginSensors();                // Start up the temperature sensor library
 
@@ -55,52 +84,99 @@ void setup() {
 }
 
 void loop() {
-  switch (currentState) {
+    // Sampling temperature at regular intervals
+    static unsigned long tempSamplingTime = millis();
+    if (millis() - tempSamplingTime > SAMPLING_INTERVAL) {
+        startTemperatureSensor();
+        tempSamplingTime = millis();
+    }
+
+    // Sampling TDS after temperature sensor has finished
+    temperatureSensorStateMachine();
+    tdsSensorStateMachine();
+}
+
+void startTemperatureSensor() {
+    tempSensorState = SENSOR_INIT;
+}
+
+void stopTemperatureSensor() {
+    tempSensorState = SENSOR_OFF;
+}
+
+void startTDSSensor() {
+    tdsSensorState = SENSOR_INIT;
+}
+
+void stopTDSSensor() {
+    tdsSensorState = SENSOR_OFF;
+}
+
+void temperatureSensorStateMachine() {
+  switch (tempSensorState) {
     case SENSOR_OFF:
         // Do nothing until instructed to turn on the sensor
         break;
     case SENSOR_INIT:
         // Initialize sensor
-        digitalWrite(GPIO_PIN, HIGH); // Power on the sensor
-        stateStartTime = millis();
-        currentState = SENSOR_STABILIZE;
+        tempStateStartTime  = millis();
+        digitalWrite(TEMP_GPIO_PIN, HIGH); // Power on the sensor
+        tempSensorState = SENSOR_STABILIZE;
         break;
     case SENSOR_STABILIZE:
         // Wait for sensor stabilization
-        if (millis() - stateStartTime >= 5000) { // Wait for 5 seconds
-            currentState = SENSOR_READ; // Move to next state
+        if (millis() - tempStateStartTime >= 2000) { // Wait for 2 seconds
+            tempSensorState = SENSOR_READ; // Move to next state
         }
         break;
     case SENSOR_READ:
         // Read sensor data
         adjustedTemp = tempSensor.readAndAdjustTemp(); // Read and adjust temperature
-        if (millis() - stateStartTime >= 15000) { // Wait for 10 seconds
+        // By default the library reads every ~1s, so the duration must be times correctly according to buffer size
+        if (millis() - tempStateStartTime  >= READING_DURATION) { // Wait for 10 seconds
           Serial.println(adjustedTemp); // Uncomment for debugging
-          currentState = SENSOR_SHUTDOWN; // Move to next state
+          tempSensorState = SENSOR_SHUTDOWN; // Move to next state
         }
-        // Serial.println(adjustedTemp); // Uncomment for debugging
         break; 
     case SENSOR_SHUTDOWN:
         // Power off the sensor
-        digitalWrite(GPIO_PIN, LOW);
-        stopSensor(); // Reset to initial state
+        digitalWrite(TEMP_GPIO_PIN, LOW);
+        stopTemperatureSensor(); // Reset to initial state
+        startTDSSensor();
         break;
   }
-  
-  // Sampling temperature at regular intervals
-  static unsigned long samplingTime = millis(); // Set the sampling time
-  if (millis() - samplingTime > samplingInterval) {
-    startSensor();
-    samplingTime = millis();                  // Reset the sampling time
+}
+
+void tdsSensorStateMachine() {
+  switch (tdsSensorState) {
+    case SENSOR_OFF:
+        // Do nothing until instructed to turn on the sensor
+        break;
+    case SENSOR_INIT:
+        // Initialize sensor
+        tdsStateStartTime = millis();
+        digitalWrite(TDS_GPIO_PIN, HIGH); // Power on the sensor
+        tdsSensorState = SENSOR_STABILIZE;
+        break;
+    case SENSOR_STABILIZE:
+        // Wait for sensor stabilization
+        if (millis() - tdsStateStartTime >= 2000) { // Wait for 2 seconds
+            tdsSensorState = SENSOR_READ; // Move to next state
+        }
+        break;
+    case SENSOR_READ:
+        // Read sensor data
+        adjustedTds = tdsSensorInstance.readAndAdjustTds(adjustedTemp);
+        if (millis() - tdsStateStartTime >= READING_DURATION) { // Wait for 10 seconds
+          Serial.println(adjustedTds); // Uncomment for debugging
+          tdsSensorState = SENSOR_SHUTDOWN; // Move to next state
+        }
+        // Serial.println(adjustedTds); // Uncomment for debugging
+        break; 
+    case SENSOR_SHUTDOWN:
+        // Power off the sensor
+        digitalWrite(TDS_GPIO_PIN, LOW);
+        stopTDSSensor(); // Reset to initial state
+        break;
   }
-
-}
-
-void startSensor() {
-  // Serial.println("init"); // Uncomment for debugging
-  currentState = SENSOR_INIT;
-}
-
-void stopSensor() {
-  currentState = SENSOR_OFF;
 }
