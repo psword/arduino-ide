@@ -1,1 +1,0 @@
-This file has not been fully tested. It should be used with a sensor that is compatible with 3.3V logic.

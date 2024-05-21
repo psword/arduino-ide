@@ -1,35 +1,37 @@
+/* Written with PlatformIO
+Intended for ESP32 Board */
+
 // #include <Arduino.h>
 
-#include <Wire.h>
-#include <OneWire.h>
-#include <DallasTemperature.h>
+#include <Wire.h>               // Wire Library
+#include <SPI.h>                // SPI Library
+#include <OneWire.h>            // DS18B20 Temperature Sensor
+#include <DallasTemperature.h>  // DS18B20 Temperature Sensor
+#include <Adafruit_ADS1X15.h>   // ADS1115 Library
 #include "OnewireTemperature.h" // Temperature Sensor Class
 #include "AnalogTds.h"          // TDS sensor class
 #include "AnalogpH.h"           // pH sensor class
 
 // Pin definitions
-#define ONE_WIRE_BUS 2   // Data wire is plugged into port 2
-#define TEMP_GPIO_PIN 17 // Power Port is GPIO PIN 17
-#define TDS_SENSOR_BUS 4 // Data Wire is plugged into port 4
-#define TDS_GPIO_PIN 16  // Power Port is GPIO PIN 16
-#define PH_SENSOR_BUS 15 // Data Wire is plugged into port 15
-#define PH_GPIO_PIN 18   // Power Port is GPIO PIN 18
+#define ONE_WIRE_BUS 2     // Data wire is plugged into port 2
+#define TEMP_GPIO_PIN 17   // Power Port is GPIO PIN 17
+#define TDS_SENSOR_BUS 4   // Data Wire is plugged into port 4
+#define TDS_GPIO_PIN 16    // Power Port is GPIO PIN 16
+#define MOSFET_GPIO_PIN 15 // Power Port is GPIO PIN 15
+#define PH_ADS1115_PIN 0   // The ADC Pin for the ADS1115 (must be 0, 1, 2, 3)
 
 // pH Offset
 #define Offset 0.37 // Deviation compensation for pH sensor
 
-// Sampling and sending intervals
-#define samplingInterval 30000 // Interval for sampling (milliseconds)
-
 // Global variables
 float adjustedTemp = 0;    // Variable to store temperature
 float adjustedTds = 0;     // Variable to store TDS
-float adjustedpH = 0;      // VAriable to store pH
+float adjustedpH = 0;      // Variable to store pH
 bool codeExecuted = false; // Flag for code execution
 
-// Define sampling intervals for temperature and TDS sensors
-#define SAMPLING_INTERVAL 30000 // Interval for temperature sampling (milliseconds)
-#define READING_DURATION 12000  // Interval for TDS sampling (milliseconds)
+// Define sampling intervals for sensors
+#define SAMPLING_INTERVAL 60000 // Interval for sampling (milliseconds)
+#define READING_DURATION 12000  // Duration for sampling (milliseconds)
 
 // Define state machine states for each sensor
 enum SensorState
@@ -60,26 +62,25 @@ void tdsSensorStateMachine();
 void pHSensorStateMachine();
 
 // Create an instance of TemperatureSensor (onewire PIN, number of samples)
-// Using the default value (10) for tempSenseIterations
+// Using the default value (10) for tempSenseIterations and 250ms for read delay
 TemperatureSensor tempSensorInstance(ONE_WIRE_BUS);
 
 // Providing a custom value for tempSenseIterations (e.g., 15)
-// TemperatureSensor tempSensor(ONE_WIRE_BUS, 15);
+// TemperatureSensor tempSensorInstance(ONE_WIRE_BUS, 15);
 
-// Create an instance of TemperatureSensor (voltage, kCoefficient, reference temp, GPIO PIN, number of samples)
-
-// Using the default value (10) for tdsSenseIterations
+// Create an instance of TdsSensor (voltage, kCoefficient, reference temp, GPIO PIN, number of samples, , delay between read)
+// Using the default value (10) for tdsSenseIterations and 250ms for read delay
 TdsSensor tdsSensorInstance(3.3, 0.02, 25.0, 1024.0, TDS_SENSOR_BUS);
 
-// Providing a custom value for tdsSenseIterations (e.g., 15)
-// TdsSensor tdsSensorInstance(3.3, 0.02, 25.0, 1024.0, TDS_SENSOR_BUS, 15);
+// Providing a custom value for tdsSenseIterations (e.g., 15) and measurement delay
+// TdsSensor tdsSensorInstance(3.3, 0.02, 25.0, 1024.0, TDS_SENSOR_BUS, 15, 500);
 
-// Create an instance of pHSensor (offset, GPIO pin, number of samples)
-// Using the default value (40) for pHSenseIterations
-pHSensor pHSensorInstance(Offset, PH_SENSOR_BUS);
+// Create an instance of pHSensor (offset, ADC pin, number of samples, read delay)
+// Using the default value (40) for pHSenseIterations and 250ms default for measurement delay
+pHSensor pHSensorInstance(Offset, PH_ADS1115_PIN);
 
-// Providing a custom value for pHSenseIterations (e.g., 60)
-// pHSensor phSensor(Offset, PH_SENSOR_BUS, 60);
+// Create an instance of pHSensor (offset, ADC pin, number of samples, read delay)
+// pHSensor phSensorInstance(Offset, PH_ADS1115_PIN, 60, 500);
 
 void setup()
 {
@@ -91,6 +92,7 @@ void setup()
     }
     pinMode(TEMP_GPIO_PIN, OUTPUT);    // Set GPIO PIN as OUTPUT for controlling power
     pinMode(TDS_GPIO_PIN, OUTPUT);     // Set GPIO PIN as OUTPUT for controlling power
+    pinMode(MOSFET_GPIO_PIN, OUTPUT);  // Set GPIO PIN as OUTPUT for controlling power
     pinMode(ONE_WIRE_BUS, INPUT);      // Set GPIO PIN as INPUT for reading data
     pinMode(TDS_SENSOR_BUS, INPUT);    // Set GPIO PIN as INPUT for reading data
     Wire.begin();                      // Join I2C bus as master device (message sender)
@@ -99,7 +101,7 @@ void setup()
     // Perform initialization if code has not been executed before
     if (!codeExecuted)
     {
-        delay(5000);                       // Brief setup delay
+        delay(10000);                      // Brief setup delay
         Serial.println("Setup Complete."); // Print setup message to serial monitor
         codeExecuted = true;               // Set code execution flag
     }
@@ -118,6 +120,7 @@ void loop()
     // Sampling TDS after temperature sensor has finished
     temperatureSensorStateMachine();
     tdsSensorStateMachine();
+    pHSensorStateMachine(); // Add this to ensure pH sensor state machine is processed
 }
 
 void startTemperatureSensor()
@@ -138,6 +141,16 @@ void startTDSSensor()
 void stopTDSSensor()
 {
     tdsSensorState = SENSOR_OFF;
+}
+
+void startPHSensor()
+{
+    pHSensorState = SENSOR_INIT;
+}
+
+void stopPHSensor()
+{
+    pHSensorState = SENSOR_OFF;
 }
 
 void temperatureSensorStateMachine()
@@ -163,9 +176,9 @@ void temperatureSensorStateMachine()
     case SENSOR_READ:
         // Read sensor data
         adjustedTemp = tempSensorInstance.readAndAdjustTemp(); // Read and adjust temperature
-        // By default the library reads every ~1s, so the duration must be times correctly according to buffer size
+        // By default the library reads every ~1s, so the duration must be timed correctly according to buffer size
         if (millis() - tempStateStartTime >= READING_DURATION)
-        {                                      // Wait for 10 seconds
+        {                                      // Waiting period
             Serial.println(adjustedTemp);      // Uncomment for debugging
             tempSensorState = SENSOR_SHUTDOWN; // Move to next state
         }
@@ -203,7 +216,7 @@ void tdsSensorStateMachine()
         // Read sensor data
         adjustedTds = tdsSensorInstance.readAndAdjustTds(adjustedTemp);
         if (millis() - tdsStateStartTime >= READING_DURATION)
-        {                                     // Wait for 10 seconds
+        {                                     // Waiting period
             Serial.println(adjustedTds);      // Uncomment for debugging
             tdsSensorState = SENSOR_SHUTDOWN; // Move to next state
         }
@@ -228,7 +241,8 @@ void pHSensorStateMachine()
     case SENSOR_INIT:
         // Initialize sensor
         pHStateStartTime = millis();
-        digitalWrite(PH_GPIO_PIN, HIGH); // Power on the sensor
+        Serial.println("Applied Mosfet Power.");
+        digitalWrite(MOSFET_GPIO_PIN, HIGH); // Power on the sensor
         pHSensorState = SENSOR_STABILIZE;
         break;
     case SENSOR_STABILIZE:
@@ -241,8 +255,9 @@ void pHSensorStateMachine()
     case SENSOR_READ:
         // Read sensor data
         adjustedpH = pHSensorInstance.computePHValue();
+        Serial.println(adjustedpH);
         if (millis() - pHStateStartTime >= READING_DURATION)
-        {                                    // Wait for 10 seconds
+        {                                    // Waiting period
             Serial.println(adjustedpH);      // Uncomment for debugging
             pHSensorState = SENSOR_SHUTDOWN; // Move to next state
         }
@@ -250,7 +265,7 @@ void pHSensorStateMachine()
         break;
     case SENSOR_SHUTDOWN:
         // Power off the sensor
-        digitalWrite(PH_GPIO_PIN, LOW);
+        digitalWrite(MOSFET_GPIO_PIN, LOW);
         stopPHSensor(); // Reset to initial state
         break;
     }
