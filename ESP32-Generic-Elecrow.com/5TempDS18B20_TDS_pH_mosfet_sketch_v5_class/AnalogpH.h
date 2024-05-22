@@ -1,5 +1,5 @@
 #include <algorithm>  // Include for std::copy and std::sort
-#include <DFRobot_PH.h>  // DFRobot pH Library v2.0
+#include <DFRobot_ESP_PH.h>  // DFRobot pH Library v2.0
 #include <EEPROM.h>  // EEPROM library
 
 class pHSensor
@@ -16,7 +16,7 @@ private:
     unsigned long lastReadTime;    // To store the last read time
     const unsigned long readDelay; // Delay between reads (milliseconds)
 
-    DFRobot_PH ph;  // pH sensor object
+    DFRobot_ESP_PH ph;  // pH sensor object
 
 public:
     // Constructor
@@ -37,6 +37,11 @@ public:
         delete[] analogBuffer;
     }
 
+    // Function to initialize the sensors object
+    void beginSensors() {
+        ph.begin();
+    }
+    
     // Function to read analog value from pH sensor and store in buffer
     void analogReadAction()
     {
@@ -47,7 +52,7 @@ public:
         {
             // Read the appropriate ADC channel based on SENSOR_INPUT_PIN
             float sensorValue = analogRead(SENSOR_INPUT_PIN);
-
+            Serial.println(sensorValue);
             // Store the voltage value in the circular buffer
             analogBuffer[analogBufferIndex] = sensorValue;
 
@@ -91,6 +96,7 @@ public:
         analogReadAction();
         float medianSensorValue = computeMedian();
         float averageVoltage = medianSensorValue * VC / maxADCValue;
+        Serial.println(averageVoltage);
         return adjustpH(averageVoltage, temperature);
     }
 };

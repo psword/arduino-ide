@@ -6,7 +6,7 @@ Intended for ESP32 Board */
 #include <Wire.h>               // Wire Library
 #include <OneWire.h>            // DS18B20 Temperature Sensor
 #include <DallasTemperature.h>  // DS18B20 Temperature Sensor
-#include <DFRobot_PH.h>         // DFRobot pH Library v2.0
+#include <DFRobot_ESP_PH.h>         // DFRobot pH Library v2.0
 #include <EEPROM.h>             // EEPROM library
 #include "OnewireTemperature.h" // Temperature Sensor Class
 #include "AnalogTds.h"          // TDS sensor class
@@ -18,7 +18,7 @@ Intended for ESP32 Board */
 #define TDS_SENSOR_BUS 4   // Data Wire is plugged into port 4
 #define TDS_GPIO_PIN 16    // Power Port is GPIO PIN 16
 #define MOSFET_GPIO_PIN 15 // Power Port is GPIO PIN 15
-#define PH_ADS1115_PIN 0   // The ADC Pin for the ADS1115 (must be 0, 1, 2, 3)
+#define PH_SENSOR_BUS 13   // The ADC Pin for the ADS1115 (must be 0, 1, 2, 3)
 
 // pH Offset
 // #define Offset 0.37 // Deviation compensation for pH sensor
@@ -75,12 +75,13 @@ TdsSensor tdsSensorInstance(3.3, 0.02, 25.0, 4096, TDS_SENSOR_BUS);
 // Providing a custom value for tdsSenseIterations (e.g., 15) and measurement delay
 // TdsSensor tdsSensorInstance(3.3, 0.02, 25.0, 1024.0, TDS_SENSOR_BUS, 15, 500);
 
-// Create an instance of pHSensor (voltage in 1000 units, reference temp, ADC bits, GPIO PIN, number of samples, delay between read)
+// Create an instance of pHSensor (voltage in 1000 units (3300 for ESP32), reference temp, ADC bits, GPIO PIN, number of samples, delay between read)
+// Using 5V passthrough with ESP32 will result in a negative pH value and disables calibration features
 // Using the default value (40) for pHSenseIterations and 250ms default for measurement delay
-// pHSensor pHSensorInstance(5000, 25.0, 4096, PH_ADS1115_PIN);
+// pHSensor pHSensorInstance(3300, 25.0, 4096, PH_SENSOR_BUS);
 
 // Providing a custom value of pHSense Iterations and measurement delay
-pHSensor pHSensorInstance(5000, 25.0, 4096, PH_ADS1115_PIN, 15, 750);
+pHSensor pHSensorInstance(3300, 25.0, 4096, PH_SENSOR_BUS, 15, 750);
 
 void setup()
 {
@@ -95,8 +96,10 @@ void setup()
     pinMode(MOSFET_GPIO_PIN, OUTPUT);  // Set GPIO PIN as OUTPUT for controlling power
     pinMode(ONE_WIRE_BUS, INPUT);      // Set GPIO PIN as INPUT for reading data
     pinMode(TDS_SENSOR_BUS, INPUT);    // Set GPIO PIN as INPUT for reading data
+    pinMode(PH_SENSOR_BUS, INPUT);     // Set GPIO PIN as INPUT for reading data
     Wire.begin();                      // Join I2C bus as master device (message sender)
     tempSensorInstance.beginSensors(); // Start up the temperature sensor library
+    pHSensorInstance.beginSensors();   // Start up the pH sensor library
 
     // Perform initialization if code has not been executed before
     if (!codeExecuted)
@@ -220,7 +223,6 @@ void tdsSensorStateMachine()
             Serial.println(adjustedTds);      // Uncomment for debugging
             tdsSensorState = SENSOR_SHUTDOWN; // Move to next state
         }
-        // Serial.println(adjustedTds); // Uncomment for debugging
         break;
     case SENSOR_SHUTDOWN:
         // Power off the sensor
@@ -260,7 +262,6 @@ void pHSensorStateMachine()
             Serial.println(adjustedpH);      // Uncomment for debugging
             pHSensorState = SENSOR_SHUTDOWN; // Move to next state
         }
-        // Serial.println(adjustedTds); // Uncomment for debugging
         break;
     case SENSOR_SHUTDOWN:
         // Power off the sensor
