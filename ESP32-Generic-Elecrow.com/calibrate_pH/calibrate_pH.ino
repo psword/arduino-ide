@@ -6,7 +6,7 @@ DFRobot_ESP_PH ph;
 #define ESPADC 4096.0   //the esp Analog Digital Convertion value
 #define ESPVOLTAGE 3300 //the esp voltage supply value
 #define PH_PIN 13		//the esp gpio data pin number
-float voltage, phValue, temperature = 24.81;
+float voltage, phValue, temperature = 23.81;
 
 void setup()
 {
@@ -14,6 +14,8 @@ void setup()
 	EEPROM.begin(32);//needed to permit storage of calibration value in eeprom
   pinMode(13, INPUT);
 	ph.begin();
+  pinMode(15,OUTPUT);
+  digitalWrite(15, HIGH);
 }
 
 void loop()
@@ -40,7 +42,7 @@ void loop()
 	ph.calibration(voltage, temperature); // calibration process by Serail CMD
 }
 
-float readTemperature()
-{
+// float readTemperature()
+// {
 	//add your code here to get the temperature from your temperature sensor
-}
+// }

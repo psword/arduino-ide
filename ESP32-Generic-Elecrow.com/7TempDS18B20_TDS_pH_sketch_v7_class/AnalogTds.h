@@ -1,21 +1,20 @@
-#include <algorithm>  // Include for std::copy and std::sort
+#include <algorithm> // Include for std::copy and std::sort
 
 class TdsSensor
 {
 private:
     // Constants for temperature coefficient calculation
-    const float kCoefficient;  // 2% Coefficient calculation
-    const float referenceTemp; // Reference temperature for the TDS sensor
-
+    const float kCoefficient;     // 2% Coefficient calculation
+    const float referenceTemp;    // Reference temperature for the TDS sensor
     const int tdsSenseIterations; // Number of measurements to take
     const float maxADCValue;      // ADC bits
     const int SENSOR_INPUT_PIN;   // Define the input PIN
 
-    float VC;              // The voltage on the pin powering the sensor
-    float *analogBuffer;   // Dynamic array for buffer
-    int analogBufferIndex; // Index for the circular buffer
-    unsigned long lastReadTime;  // To store the last read time
-    const unsigned long readDelay;   // Delay between reads (milliseconds)
+    float VC;                      // The voltage on the pin powering the sensor
+    float *analogBuffer;           // Dynamic array for buffer
+    int analogBufferIndex;         // Index for the circular buffer
+    unsigned long lastReadTime;    // To store the last read time
+    const unsigned long readDelay; // Delay between reads (milliseconds)
 
 public:
     // Constructor
@@ -24,7 +23,8 @@ public:
     {
         // Allocate memory for the analog buffer
         analogBuffer = new float[tdsSenseIterations];
-        if (analogBuffer == nullptr) {
+        if (analogBuffer == nullptr)
+        {
             Serial.println("Failed to allocate memory for analog buffer");
         }
     }
@@ -34,6 +34,12 @@ public:
     {
         // Deallocate memory for the analog buffer
         delete[] analogBuffer;
+    }
+
+    // Method to get the readDelay value
+    unsigned long getReadDelay() const
+    {
+        return readDelay;
     }
 
     // Function to read analog value from sensor and store in buffer

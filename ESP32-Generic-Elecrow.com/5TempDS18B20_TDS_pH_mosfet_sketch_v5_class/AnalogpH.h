@@ -1,6 +1,6 @@
-#include <algorithm>  // Include for std::copy and std::sort
-#include <DFRobot_ESP_PH.h>  // DFRobot pH Library v2.0
-#include <EEPROM.h>  // EEPROM library
+#include <algorithm>        // Include for std::copy and std::sort
+#include <DFRobot_ESP_PH.h> // DFRobot pH Library v2.0
+#include <EEPROM.h>         // EEPROM library
 
 class pHSensor
 {
@@ -16,7 +16,7 @@ private:
     unsigned long lastReadTime;    // To store the last read time
     const unsigned long readDelay; // Delay between reads (milliseconds)
 
-    DFRobot_ESP_PH ph;  // pH sensor object
+    DFRobot_ESP_PH ph; // pH sensor object
 
 public:
     // Constructor
@@ -25,7 +25,8 @@ public:
     {
         // Allocate memory for the analog buffer
         analogBuffer = new float[pHSenseIterations];
-        if (analogBuffer == nullptr) {
+        if (analogBuffer == nullptr)
+        {
             Serial.println("Failed to allocate memory for analog buffer");
         }
     }
@@ -38,30 +39,28 @@ public:
     }
 
     // Function to initialize the sensors object
-    void beginSensors() {
+    void beginSensors()
+    {
         ph.begin();
     }
-    
+
+    // Function to get the readDelay value
+    unsigned long getReadDelay() const
+    {
+        return readDelay;
+    }
+
     // Function to read analog value from pH sensor and store in buffer
     void analogReadAction()
     {
-        unsigned long currentMillis = millis(); // Assign current millis value for timer
+        // Read the appropriate ADC channel based on SENSOR_INPUT_PIN
+        float sensorValue = analogRead(SENSOR_INPUT_PIN);
+        Serial.println(sensorValue);
+        // Store the voltage value in the circular buffer
+        analogBuffer[analogBufferIndex] = sensorValue;
 
-        // Check if the delay gap has passed
-        if (currentMillis - lastReadTime >= readDelay)
-        {
-            // Read the appropriate ADC channel based on SENSOR_INPUT_PIN
-            float sensorValue = analogRead(SENSOR_INPUT_PIN);
-            Serial.println(sensorValue);
-            // Store the voltage value in the circular buffer
-            analogBuffer[analogBufferIndex] = sensorValue;
-
-            // Update the buffer index
-            analogBufferIndex = (analogBufferIndex + 1) % pHSenseIterations;
-
-            // Update the last read time
-            lastReadTime = currentMillis;
-        }
+        // Update the buffer index
+        analogBufferIndex = (analogBufferIndex + 1) % pHSenseIterations;
     }
 
     // Function to compute median reading from buffer
@@ -85,18 +84,16 @@ public:
     // Function to adjust pH based on temperature
     float adjustpH(float voltage, float temperature)
     {
-        float pHValue = ph.readPH(voltage, temperature);  // Convert voltage to pH with temp adjustment
+        float pHValue = ph.readPH(voltage, temperature); // Convert voltage to pH with temp adjustment
         return pHValue;
     }
 
     // Function to compute pH value
     float computePHValue(float temperature)
     {
-        // Perform pH sensing operations
         analogReadAction();
         float medianSensorValue = computeMedian();
         float averageVoltage = medianSensorValue * VC / maxADCValue;
-        Serial.println(averageVoltage);
         return adjustpH(averageVoltage, temperature);
     }
 };
