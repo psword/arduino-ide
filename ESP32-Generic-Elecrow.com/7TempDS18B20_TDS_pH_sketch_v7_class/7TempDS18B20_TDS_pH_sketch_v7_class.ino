@@ -48,7 +48,8 @@ unsigned long tdsStateStartTime = 0;
 unsigned long pHStateStartTime = 0;
 
 // Function prototypes
-void countdownTimer(int startValue);
+void calibrationTimer(unsigned long stabilizationDelay, int iterations, unsigned long interval);
+void enableCalibrationMode();
 void startTemperatureSensor();
 void stopTemperatureSensor();
 void startTDSSensor();
@@ -72,7 +73,7 @@ TemperatureSensor tempSensorInstance(ONE_WIRE_BUS);
 // TdsSensor tdsSensorInstance(3.3, 0.02, 25.0, 4096, TDS_SENSOR_BUS);
 
 // Providing a custom value for tdsSenseIterations (e.g., 15) and measurement delay
-TdsSensor tdsSensorInstance(3.3, 0.02, 25.0, 1024.0, TDS_SENSOR_BUS, 15, 650);
+TdsSensor tdsSensorInstance(3.3, 0.02, 25.0, 4096, TDS_SENSOR_BUS, 15, 650);
 
 // Create an instance of pHSensor (voltage in 1000 units (3300 for ESP32), reference temp, ADC bits, GPIO PIN, number of samples, delay between read)
 // Using 5V passthrough with ESP32 will result in a negative pH value and disables calibration features
@@ -92,20 +93,33 @@ void setup()
     }
     pinMode(TEMP_GPIO_PIN, OUTPUT);    // Set GPIO PIN as OUTPUT for controlling power
     pinMode(TDS_GPIO_PIN, OUTPUT);     // Set GPIO PIN as OUTPUT for controlling power
-    pinMode(PH_GPIO_PIN, OUTPUT);  // Set GPIO PIN as OUTPUT for controlling power
+    pinMode(PH_GPIO_PIN, OUTPUT);      // Set GPIO PIN as OUTPUT for controlling power
     pinMode(ONE_WIRE_BUS, INPUT);      // Set GPIO PIN as INPUT for reading data
     pinMode(TDS_SENSOR_BUS, INPUT);    // Set GPIO PIN as INPUT for reading data
     pinMode(PH_SENSOR_BUS, INPUT);     // Set GPIO PIN as INPUT for reading data
+    EEPROM.begin(32);                  // Needed for eeprom
     Wire.begin();                      // Join I2C bus as master device (message sender)
     tempSensorInstance.beginSensors(); // Start up the temperature sensor library
     pHSensorInstance.beginSensors();   // Start up the pH sensor library
 
     // Perform initialization if code has not been executed before
+    
     if (!codeExecuted)
     {
-        countdownTimer(10); // Countdown timer for testing
-        // delay(10000);                   // Brief setup delay
+        /*
+        Currently the calibration function allows us to enter calibration mode, but it will not
+        read the pH value and save it to EEPROM correctly. Leave commented out until fixed. It may be removed from
+        the code block if it cannot be implemented in the sketch in the way we are attempting to do so.
+        
+        For now, the appropriate method for calibration is to load the default calibration sketch and write to EEPROM.
+        */ 
+        // Use the formula to determine length of time for calibration
+        // Total Calibration Time in ms = Initial Stabilization Delay + (Iterations * Interval)
+        // calibrationTimer(stabilization, interations, interval) -> see the function
+        // calibrationTimer(2000, 298000, 1); // Countdown timer for testing
+        delay(10000);
         Serial.println("Setup Complete."); // Print setup message to serial monitor
+        
         codeExecuted = true;               // Set code execution flag
     }
 }
@@ -119,8 +133,7 @@ void loop()
         startTemperatureSensor();
         tempSamplingTime = millis();
     }
-    // need to input voltage and temperature
-    pHSensorInstance.calibrateSensors(voltage here, temperature here);
+
     // Sampling TDS after temperature sensor has finished
     temperatureSensorStateMachine();
     tdsSensorStateMachine();
@@ -128,13 +141,45 @@ void loop()
 }
 
 // Function to implement a countdown timer for testing timers
-void countdownTimer(int startValue)
+void calibrationTimer(unsigned long stabilizationDelay, int iterations, unsigned long interval)
 {
-    for (int i = startValue; i >= 0; i--)
+    unsigned long startTime = millis();
+    int count = 0;
+    Serial.print("Total Calibration Time: ");
+    Serial.print((stabilizationDelay + (iterations * interval))/(1000 * 60));
+    Serial.println(" minutes");
+    digitalWrite(TEMP_GPIO_PIN, HIGH); // Power on the temperature sensor
+    digitalWrite(PH_GPIO_PIN, HIGH);   // Power on the pH sensor
+    delay(stabilizationDelay); // Allow sensors to stabilize
+
+    while (count < iterations)
     {
-        Serial.println(i); // Print the countdown value to the serial monitor
-        delay(1000);       // Wait for 1 second (1000 milliseconds)
+        unsigned long currentTime = millis();
+        if (currentTime - startTime >= interval)
+        {
+            enableCalibrationMode();
+            startTime = currentTime; // Reset the start time
+            count++;
+        }
     }
+
+    digitalWrite(TEMP_GPIO_PIN, LOW); // Power off the sensor
+    digitalWrite(PH_GPIO_PIN, LOW);   // Power off the sensor
+}
+
+void enableCalibrationMode()
+{
+    static unsigned long lastReadTime = 0;
+    unsigned long currentTime = millis();
+
+	if (currentTime - lastReadTime > 1000) //time interval: 1s
+    {
+        adjustedTemp = tempSensorInstance.readAndAdjustTemp(); // Read and adjust temperature
+        adjustedpH = pHSensorInstance.computePHValue(adjustedTemp);  // Read and adjust pH
+        lastReadTime = currentTime;
+    }
+    float getAverageVoltage = pHSensorInstance.getAverageVoltage();
+    pHSensorInstance.calibrateSensors(getAverageVoltage, adjustedTemp);
 }
 
 void startTemperatureSensor()
@@ -190,6 +235,7 @@ void temperatureSensorStateMachine()
     case SENSOR_READ:
         // Read sensor data
         adjustedTemp = tempSensorInstance.readAndAdjustTemp(); // Read and adjust temperature
+        // Serial.println(adjustedTemp);      // Uncomment for debugging
         // By default the library reads every ~1s, so the duration must be timed correctly according to buffer size
         if (millis() - tempStateStartTime >= READING_DURATION)
         {                                      // Waiting period
@@ -234,12 +280,13 @@ void tdsSensorStateMachine()
         if (millis() - lastReadTime >= tdsSensorInstance.getReadDelay())
         {
             adjustedTds = tdsSensorInstance.readAndAdjustTds(adjustedTemp);
-            Serial.println(adjustedTds); // Uncomment for debugging
+            // Serial.println(adjustedTds); // Uncomment for debugging
             lastReadTime = millis();     // Update the last read time
         }
 
         if (millis() - tdsStateStartTime >= READING_DURATION)
         {                                     // Waiting period
+            Serial.println(adjustedTds); // Uncomment for debugging
             tdsSensorState = SENSOR_SHUTDOWN; // Move to next state
         }
         break;
@@ -281,11 +328,12 @@ void pHSensorStateMachine()
         if (millis() - lastReadTime >= pHSensorInstance.getReadDelay())
         {
             adjustedpH = pHSensorInstance.computePHValue(adjustedTemp);
-            Serial.println(adjustedpH); // Uncomment for debugging
+            // Serial.println(adjustedpH); // Uncomment for debugging
             lastReadTime = millis();    // Update the last read time
         }
-        if (millis() - pHStateStartTime >= READING_DURATION)
+        if (millis() - pHStateStartTime >= READING_DURATION) // Uncomment when not calibrating
         {                                    // Waiting period
+            Serial.println(adjustedpH); // Uncomment for debugging
             pHSensorState = SENSOR_SHUTDOWN; // Move to next state
         }
         break;

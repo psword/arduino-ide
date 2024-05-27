@@ -17,6 +17,7 @@ private:
     const unsigned long readDelay; // Delay between reads (milliseconds)
 
     DFRobot_ESP_PH ph; // pH sensor object
+    float averageVoltage;          // Store the average voltage
 
 public:
     // Constructor
@@ -44,10 +45,16 @@ public:
         ph.begin();
     }
 
+    // Function to get the average voltage
+    float getAverageVoltage() const
+    {
+        return averageVoltage;
+    }
+
     // Function to calibrate the sensor
     void calibrateSensors(float voltage, float temperature)
     {
-        ph.calibration(voltage, temperature); // calibration process by Serail CMD
+        ph.calibration(voltage, temperature); // calibration process by Serial CMD
     }
 
     // Function to get the readDelay value
