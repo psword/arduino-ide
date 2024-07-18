@@ -1,9 +1,13 @@
 arduino_secrets.h
 donotupload.h
-.vscode
+*.vscode
 arduino.json
 c_cpp_properties.json
 launch.json
 settings.json
 Libraries
 tools
+ESP32-Generic-Elecrow.com/blank_program/blank_program.ino
+ESP32-Generic-Elecrow.com/robot-uprising-motor-test/robot-uprising-motor-test.ino
+ESP32-Generic-Elecrow.com/robot_uprising_motor_test_dir1/robot_uprising_motor_test_dir1.ino
+ESP32-Generic-Elecrow.com/robot_uprising_motor_test_dir2/robot_uprising_motor_test_dir2.ino
