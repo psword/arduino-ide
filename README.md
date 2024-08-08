@@ -5,6 +5,7 @@
  - Arduino R4 UNO
  - Huzzah Feather ESP8266
  - FireBeetle ESP8266
+ - ESP32 Dev Boards
 
 This is primarily a learning repository. However, it also contains work related to a university learning project.
 

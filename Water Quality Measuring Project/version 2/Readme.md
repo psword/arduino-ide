@@ -9,7 +9,11 @@ This folder contains the code to convert the design to an ESP32-based architectu
 
 - For Arduino IDE, choose ESP32 Dev Module
 (this was originally built in PlatformIO)
-
+- Libraries Needed:\
+  [SimpleTimer](https://github.com/kiryanenko/SimpleTimer) by kiryanenko\
+  [DFRobot_ESP_PH](https://github.com/GreenPonik/DFRobot_ESP_PH_BY_GREENPONIK) by Greenonik\
+  Libraries for DallasTemperature/OneWire
+  
 ## Version 2.0
 
 - 2 Modules, sensing and comm
