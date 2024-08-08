@@ -1,113 +1,134 @@
-// Include necessary libaries for operation
-#include <Wire.h>               // Wire Library
-#include <OneWire.h>            // DS18B20 Temperature Sensor
-#include <DallasTemperature.h>  // DS18B20 Temperature Sensor
-#include <DFRobot_ESP_PH.h>     // DFRobot pH Library v2.0
-#include <EEPROM.h>             // EEPROM library
-#include "temperature_sensor.h" // Temperature Sensor Class
-#include "tds_sensor.h"         // TDS sensor class
-#include "ph_sensor.h"          // pH sensor class
+/*
+ * Project: ESP32 Sensor Monitoring with Deep Sleep
+ * Description: This code reads data from temperature, TDS, and pH sensors connected to an ESP32,
+ *              manages sensor operations using a state machine, and transmits data via I2C.
+ *              The ESP32 enters deep sleep to conserve power between readings.
+ * Author: Philip
+ * Written for: ESP32 Dev Board
+ */
+
+#include <Wire.h>               // Wire Library for I2C communication
+#include <OneWire.h>            // Library for OneWire protocol (used by DS18B20 temperature sensor)
+#include <DallasTemperature.h>  // Library for DS18B20 temperature sensor
+#include <DFRobot_ESP_PH.h>     // DFRobot pH Sensor Library v2.0
+#include <EEPROM.h>             // EEPROM library for non-volatile storage
+#include "temperature_sensor.h" // Custom Temperature Sensor Class
+#include "tds_sensor.h"         // Custom TDS Sensor Class
+#include "ph_sensor.h"          // Custom pH Sensor Class
 #include "esp_sleep.h"          // ESP32 deep sleep library
-#include "sensor_config.h"      // Parameters, variables, and constants
+#include "sensor_config.h"      // Configuration file with parameters, variables, and constants
 #include "sensor_state_machine.h" // State machine to control each sensor
-#include "transmit_functions.h"  // Include I2C transmit function
+#include "transmit_functions.h"  // I2C transmission functions
 
-bool codeExecuted = false;     // Flag for code execution
-const uint8_t messageType4 = 0x04;   // Message type identifier
+// Global flags and constants
+bool codeExecuted = false;          // Flag to track if code has executed previously
+const uint8_t messageType4 = 0x04;  // Message type identifier for sleep command
 
-// Define function prototypes
+// Function prototype for deep sleep
 void goToDeepSleep();
 
-// Create an instance of TemperatureSensor class (onewire PIN, number of samples that buffer retains)
-TemperatureSensor tempSensorInstance(ONE_WIRE_BUS);
-// Providing a custom value for tempSenseIterations
-// TemperatureSensor tempSensorInstance(ONE_WIRE_BUS, 15);
+// Instantiate sensor objects
 
-// Create an instance of TdsSensor class (voltage, kCoefficient, reference temp, ADC bits, GPIO PIN, number of samples that buffer retains)
+// Temperature Sensor: Specify OneWire PIN and the number of samples in the buffer
+TemperatureSensor tempSensorInstance(ONE_WIRE_BUS);
+
+// TDS Sensor: Specify voltage, kCoefficient, reference temperature, ADC resolution, GPIO PIN, and buffer size
 TdsSensor tdsSensorInstance(3.3, 0.02, 25.0, 4096, TDS_SENSOR_BUS, 15);
 
-// Create an instance of pHSensor class (voltage in 1000 units, reference temp, ADC bits, GPIO PIN, number of samples that buffer retains)
+// pH Sensor: Specify voltage (in mV), reference temperature, ADC resolution, GPIO PIN, and buffer size
 pHSensor pHSensorInstance(3300, 25.0, 4096, PH_SENSOR_BUS, 15);
 
+// Create state machine instances for each sensor
 SensorStateMachine<TemperatureSensor> tempStateMachine(tempSensorInstance, TEMP_SENSOR_POWER_PIN);
 SensorStateMachine<TdsSensor> tdsStateMachine(tdsSensorInstance, TDS_SENSOR_POWER_PIN);
 SensorStateMachine<pHSensor> pHStateMachine(pHSensorInstance, PH_SENSOR_POWER_PIN);
 
 void setup() {
-    Serial.begin(9600); // Start serial port for debugging
-    // Wait for serial port to connect
+    Serial.begin(9600); // Initialize serial communication for debugging
+    // Wait for the serial port to connect
     while (!Serial) {
         ;
     }
-    pinMode(TEMP_SENSOR_POWER_PIN, OUTPUT);    // Set GPIO PIN as OUTPUT for controlling power
-    pinMode(TDS_SENSOR_POWER_PIN, OUTPUT);     // Set GPIO PIN as OUTPUT for controlling power
-    pinMode(PH_SENSOR_POWER_PIN, OUTPUT);      // Set GPIO PIN as OUTPUT for controlling power
-    pinMode(ONE_WIRE_BUS, INPUT);      // Set GPIO PIN as INPUT for reading data
-    pinMode(TDS_SENSOR_BUS, INPUT);    // Set GPIO PIN as INPUT for reading data
-    pinMode(PH_SENSOR_BUS, INPUT);     // Set GPIO PIN as INPUT for reading data
-    EEPROM.begin(32);                  // Needed for EEPROM
-    Wire.begin();                      // Join I2C bus as master device (message sender)
-    tempSensorInstance.beginSensors(); // Start up the temperature sensor library
-    pHSensorInstance.beginSensors();   // Start up the pH sensor library
+
+    // Set GPIO pins as OUTPUTs for controlling sensor power
+    pinMode(TEMP_SENSOR_POWER_PIN, OUTPUT);
+    pinMode(TDS_SENSOR_POWER_PIN, OUTPUT);
+    pinMode(PH_SENSOR_POWER_PIN, OUTPUT);
+
+    // Set GPIO pins as INPUTs for reading sensor data
+    pinMode(ONE_WIRE_BUS, INPUT);
+    pinMode(TDS_SENSOR_BUS, INPUT);
+    pinMode(PH_SENSOR_BUS, INPUT);
+
+    EEPROM.begin(32);          // Initialize EEPROM with a size of 32 bytes
+    Wire.begin();              // Initialize I2C bus as master
+
+    // Initialize sensors
+    tempSensorInstance.beginSensors(); // Initialize the temperature sensor library
+    pHSensorInstance.beginSensors();   // Initialize the pH sensor library
 
     // Check if the system is waking up from deep sleep
     if (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_TIMER) {
         Serial.println("Waking up from deep sleep");
-        codeExecuted = true; // Set code execution flag
+        codeExecuted = true; // Set flag indicating code has been executed
     }
 
+    // If the code has not been executed yet, enter deep sleep initially
     if (!codeExecuted) {
         Serial.println("Going to deep sleep for the first time.");
-        goToDeepSleep(); // Enter deep sleep initially
+        goToDeepSleep(); // Enter deep sleep mode
     }
 
-    // The TDS sensor does not require initialization
-
-    /* Perform any other custom initializations if code has not been executed before
-    // if (!codeExecuted) {
-    //     delay(10000);
-    //     Serial.println("Setup Complete."); // Print setup message to serial monitor
-    //     codeExecuted = true; // Set code execution flag
-    } 
+    // Note: TDS sensor does not require any additional initialization
+    // Additional custom initialization can be added here if needed
+    /*
+    if (!codeExecuted) {
+        delay(10000);
+        Serial.println("Setup Complete."); // Print setup complete message to serial monitor
+        codeExecuted = true; // Set flag indicating code execution
+    }
     */
 }
 
 void loop() {
-    static bool tempStarted = false;
-    static bool tdsStarted = false;
-    static bool pHStarted = false;
+    static bool tempStarted = false;  // Track whether the temperature sensor has started
+    static bool tdsStarted = false;   // Track whether the TDS sensor has started
+    static bool pHStarted = false;    // Track whether the pH sensor has started
 
-    // Execute the state machine operations
-    tempStateMachine.operate();
-    tdsStateMachine.operate();
-    pHStateMachine.operate();
+    // Operate each state machine
+    tempStateMachine.operate(); // Handle temperature sensor state
+    tdsStateMachine.operate();  // Handle TDS sensor state
+    pHStateMachine.operate();   // Handle pH sensor state
     
-    // Start the temperature sensor first if not already started
+    // Start the temperature sensor state machine if not already started
     if (!tempStarted) {
         tempStateMachine.start();
         tempStarted = true;
     }
 
-    // Logic to transition between state machines in sequence
+    // Transition to the TDS sensor state machine after temperature sensor completes
     if (tempStateMachine.isOff() && !tdsStarted) {
         tdsStateMachine.start();
         tdsStarted = true;
     }
+
+    // Transition to the pH sensor state machine after TDS sensor completes
     if (tempStateMachine.isOff() && tdsStateMachine.isOff() && !pHStarted) {
         pHStateMachine.start();
         pHStarted = true;
     }
 
-    // Check if all messages have been sent, then go to deep sleep
+    // After all sensors have completed, transmit data and go to deep sleep
     if (tempStateMachine.isOff() && tdsStateMachine.isOff() && pHStateMachine.isOff()) {
-        transmitSleep(messageType4); // Transmit using messageType4
-        goToDeepSleep();
+        transmitSleep(messageType4); // Transmit the sleep command using I2C
+        goToDeepSleep();             // Enter deep sleep mode
     }
 }
 
+// Function to enter deep sleep for a specified duration
 void goToDeepSleep() {
-    // Set the deep sleep timer (for example, 10 minutes)
+    // Set the deep sleep timer (e.g., 10 minutes)
     esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * S_TO_MIN_FACTOR * uS_TO_S_FACTOR); // 10 minutes in microseconds
     Serial.println("Going to deep sleep now");
-    esp_deep_sleep_start();
+    esp_deep_sleep_start(); // Enter deep sleep mode
 }
