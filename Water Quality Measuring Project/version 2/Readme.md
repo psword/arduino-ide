@@ -20,10 +20,10 @@ This folder contains the code to convert the design to an ESP32-based architectu
 - ESP32_sensing_v2.0 is the sensing portion of the project
 - ESP32_comm_v2.0 is the comms portion of the project
 
-### Desired features
+### Concepts to potentially include as this project matures
 
 - Considerations for modularity/adaptability and future sensor additions
 - Considerations for power consumption and battery life (sleep functions, etc.)
 - Considerations for data transmission (WiFi, Bluetooth, LoRa, etc)
-- Considerations for data storage (SD card, cloud, etc)
+- Considerations for possible data storage (SD card, cloud, etc)
 - Reliable inter-device communication and simple error-handling/reporting features
