@@ -8,7 +8,7 @@ Here is the schematic:
 
 ![FritzingSchematic](FritzingCircuit2.png)
 
-Here is the finzal example for presentation
+Here is the final example for presentation
 
 ![ExamplePresentation](ExamplePresentation1.JPEG)
 
