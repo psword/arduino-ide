@@ -1,4 +1,4 @@
-# ***Project Katuma***
+# ***Katuma Lake Project***
 
 - [Project History](#bookproject-history)
 - [Primary Challenge](#heavy_check_markMain-Challenge)
