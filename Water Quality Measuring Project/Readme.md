@@ -24,16 +24,15 @@ Below is a summary of qualifications that have evolved within the last year. The
   - Be "real-time"
   - Be submerged
   - Be attached to a buoy or other fixed surface
-  - If attached to buoy, be anchored, to eliminate ballast considerations
-  - Have an antennae in place to attain proper netwrok signal
+  - Have an antennae in place to attain proper network signal
   - Measure pH
   - Measure Total Dissolved Solids
   - Measure Temperature
-  - Measure direct and indirect paramters
+  - Measure direct and indirect parameters
   - Be accurate
   - Be precise
   - Account for bio-fouling and use preventative measures to protect sensor probes/ends
-  - Maintain adequate power for duration of deployment
+  - Maintain adequate power for the duration of deployment
   - Be deployed for at minimum 30 days
   - Implement deep-sleep functions to conserve power
   - Be water-tight
@@ -58,3 +57,10 @@ Below is a summary of qualifications that have evolved within the last year. The
   - Include interior environment sensor to detect excessive moisture
   - Follow practices consistent with rapid prototyping, modularity, and additive manufacturing
   - Be reasonable in cost
+  - If attached to a buoy, be anchored, to eliminate ballast considerations
+
+  #### What I would enjoy the design to do in the future
+
+  - Use machine vision to enhance the concept of measuring turbidity
+  - Implement machine learning to predict based on the small changes between photos
+  - This could be a separate physical unit
