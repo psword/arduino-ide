@@ -128,7 +128,7 @@ void loop() {
 // Function to enter deep sleep for a specified duration
 void goToDeepSleep() {
     // Set the deep sleep timer (e.g., 10 minutes)
-    esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * S_TO_MIN_FACTOR * uS_TO_S_FACTOR); // 10 minutes in microseconds
+    esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * S_TO_MIN_FACTOR * uS_TO_S_FACTOR); // Define the sleep condition
     Serial.println("Going to deep sleep now");
     esp_deep_sleep_start(); // Enter deep sleep mode
 }
