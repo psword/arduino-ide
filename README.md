@@ -7,8 +7,7 @@
  - FireBeetle ESP8266
  - ESP32 Dev Boards
 
-This is primarily a learning repository. However, it also contains work related to a university learning project. Note: I use Wi-Fi for initial testing. However, once the operational design matures, it will naturally transition to low-power communications.
-
+This is primarily a learning repository. However, it also contains work related to a university learning project. 
 [Version 1](https://github.com/psword/arduino-ide/tree/33ed06192bf1e0ca8ec16ae9a3d8f0646361ff46/Water%20Quality%20Measuring%20Project) prototype code allows:
 
  - I2C communication between 4 MCUs
@@ -28,6 +27,9 @@ There are several operational issues with the Version 1 design, and it is suitab
 - Code designed in Visual Studio Code using [Platform IO](https://github.com/platformio)
 
 ***Version 2 is in design, and will be the first submerged implementation.
+
+Note: I use Wi-Fi for initial testing. However, once the operational design matures, it will naturally transition to low-power communications.
+
 
 Further notes, documents, and ideated designs see [here](https://github.com/psword/arduino-ide/tree/a27fc44e874fe428e2d5003f90bf01ba792a1445/Water%20Quality%20Measuring%20Project).
 
