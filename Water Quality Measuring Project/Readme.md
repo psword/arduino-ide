@@ -1,5 +1,13 @@
 # ***Project Katuma***
 
+
+![IMG_0815](https://github.com/user-attachments/assets/472342f3-6e41-4d11-b8a9-c19fa0a832b9)
+
+*Katumajärvi syksyllä (marraskuu)*
+
+
+
+
 ## Project history
 
 I came across this project as part of a HAMK class collaboration between ICT/Bioeconomy and Sustainability Development programs. This concept was fascinating to me, 
@@ -64,3 +72,6 @@ Below is a summary of qualifications that have evolved within the last year. The
   - Use machine vision to enhance the concept of measuring turbidity
   - Implement machine learning to predict based on the small changes between photos
   - This could be a separate physical unit
+
+--------------------------------------------------------------------------------------------
+![IMG_9026](https://github.com/user-attachments/assets/60e6362b-5982-4703-bb23-79ff29d4b4cb)
