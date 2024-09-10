@@ -9,7 +9,7 @@
 ------------------------------------------------------------------------
 This is primarily a learning repository. However, it also contains work related to a university learning project. See [Water Quality Measuring Project](https://github.com/psword/arduino-ide/tree/main/Water%20Quality%20Measuring%20Project).
 
-[Version 1](https://github.com/psword/arduino-ide/tree/main/Water%20Quality%20Measuring%20Project) prototype code allows:
+[Version 1](https://github.com/psword/arduino-ide/tree/main/Water%20Quality%20Measuring%20Project/version%201) prototype code allows:
 
  - I2C communication between 4 MCUs
  - [Arduino R3](https://store.arduino.cc/en-fi/products/arduino-uno-rev3?srsltid=AfmBOoqjvXa_Z3smDLSFfSScGgidhrbx-66E7KziQySzwaVlbBPr1Xnl), [Huzzah Feather 8266](https://www.adafruit.com/product/2821), and [Firebeetle ESP8266](https://www.dfrobot.com/product-1634.html)
