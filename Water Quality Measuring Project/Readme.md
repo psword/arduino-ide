@@ -1,4 +1,4 @@
-# ***Katuma Lake Project***
+# ***Katuma Lake Project*** | ***Katumajärven projekti***
 
 - [Project History](#bookproject-history)
 - [Primary Challenge](#heavy_check_markMain-Challenge)
@@ -11,7 +11,7 @@
 
 ![IMG_0815](https://github.com/user-attachments/assets/472342f3-6e41-4d11-b8a9-c19fa0a832b9)
 
-*Katumajärvi syksyllä (marraskuu)*
+*Katumajärvi syksyllä (marraskuu, Hämeenlinna)*
 
 
 
@@ -101,9 +101,9 @@ Below is a summary of qualifications that have evolved within the last year. The
 
 - [version 2](https://github.com/psword/arduino-ide/tree/365733f2cc70094ce8d8d4dbf585f9bfd65574c7/Water%20Quality%20Measuring%20Project/version%202)
 
-  This version is in progress, and will develop into code that will support a working, deployable prototype.
+  This version is in progress and will develop into code that will support a working, deployable prototype.
   
 --------------------------------------------------------------------------------------------
 ![IMG_9026](https://github.com/user-attachments/assets/60e6362b-5982-4703-bb23-79ff29d4b4cb)
 
-*Katumajärvi syksyllä (marraskuu)*
+*Katumajärvi syksyllä (marraskuu, Hämeenlinna)*
