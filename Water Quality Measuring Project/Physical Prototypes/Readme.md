@@ -1,0 +1,1 @@
+These directories are pictures of the housings. If you want pictures of how the simple circuit was designed, go to the [Fritzing Folder](https://github.com/psword/arduino-ide/tree/e3cc8eb2650a5339e0725f24239e035c174d25e0/Water%20Quality%20Measuring%20Project/Fritzing%20Images).

@@ -14,7 +14,7 @@ I came across this project as part of a HAMK class collaboration between ICT/Bio
 and was linked to [Lake Katuma](https://katumajarvi.fi/jarvibarometri-uusi-digitaalinen-palvelu-katumajarvelle/) - also [here](https://www.jarviwiki.fi/wiki/Katumaj%C3%A4rvi_(35.236.1.001)/Katumaj%C3%A4rvi-info).
 For 3 months, I was paired with two of my Finnish friends from the non-technical program - and we began!
 
-Since this project has had a real-world impact, and was a concrete way for me to develop my skills further in IoT (which is part of the reason for studying at HAMK), I have pursued it. So, part of this is my experience in 
+Since this project has a real-world impact and was a concrete way for me to develop my skills further in IoT (which is part of the reason for studying at HAMK), I have pursued it. So, part of this is my experience in 
 learning microcontroller platforms (whereas my work history always dealt with the IT System Admin side) and how to implement them. I had never studied C++ before this project, and I'm not an electrical engineer, but I am willing
 to experiment and follow ideas to reality. I will include design ideas, prototypes, and concepts our team initially considered, including good and bad. This is about iterative design, and how it can be used to create something extremely applicable.
 
