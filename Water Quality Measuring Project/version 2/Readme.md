@@ -20,6 +20,11 @@ This folder contains the code to convert the design to an ESP32-based architectu
 - ESP32_sensing_v2.0 is the sensing portion of the project
 - ESP32_comm_v2.0 is the comms portion of the project
 
+## Version 2.1
+
+- Version 2.0 features
+- Enhanced commenting and clarification
+
 ### Concepts to potentially include as this project matures
 
 - Considerations for modularity/adaptability and future sensor additions
