@@ -40,3 +40,7 @@ Mount plate example - the plate would be attached to the cross-bar, and the asse
 ![Sample of how the Mount Plate would be used](MountPlateSample1.jpg)
 
 ![Sample of how the Mount Plate would be used](MountPlateSample2.jpg)
+
+Dimensions Challenge Example - in progress
+
+![Dimensions of items](DimensionsChallenge1.jpg)
