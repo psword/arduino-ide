@@ -74,12 +74,14 @@ Below is a summary of qualifications that have evolved within the last year. The
   - Follow practices consistent with rapid prototyping, modularity, and additive manufacturing
   - Be reasonable in cost
   - If attached to a buoy, be anchored, to eliminate ballast considerations
+  - Operate from a single microcontroller
+  - Use custom PCB to enhance operation and power management
 
   #### :telescope:What I would enjoy the design to do in the future
 
   - Use machine vision to enhance the concept of measuring turbidity
   - Implement machine learning to predict based on the small changes between photos
-  - This could be a separate physical unit
+  - This (machine vision with turbidity tube) could be a separate physical unit
 
 ### :pencil:Project Folders
 
