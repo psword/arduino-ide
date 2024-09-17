@@ -85,23 +85,23 @@ Below is a summary of qualifications that have evolved within the last year. The
 
 ### :pencil:Project Folders
 
-- [Fritzing Images](https://github.com/psword/arduino-ide/tree/main/Water%20Quality%20Measuring%20Project/Fritzing%20Images/version%201)
+- [Fritzing Images (snapshots of concept and schematic)](https://github.com/psword/arduino-ide/tree/main/Water%20Quality%20Measuring%20Project/Fritzing%20Images/version%201)
 
   This folder contains snapshots of the wiring for the project versions. As of now, version 1 is populated, and I am working on version 2.
 
-- [Logical Diagrams](https://github.com/psword/arduino-ide/tree/main/Water%20Quality%20Measuring%20Project/Logical%20Diagrams)
+- [Logical Diagrams (diagrams that show basic operation)](https://github.com/psword/arduino-ide/tree/main/Water%20Quality%20Measuring%20Project/Logical%20Diagrams)
 
   This folder contains logical diagrams showing information flow. As of now, version 1 is populated, and I am working on version 2.
 
-- [Physical Prototypes](https://github.com/psword/arduino-ide/tree/main/Water%20Quality%20Measuring%20Project/Physical%20Prototypes)
+- [Physical Prototypes (evolution of how this will be assembled)](https://github.com/psword/arduino-ide/tree/main/Water%20Quality%20Measuring%20Project/Physical%20Prototypes)
 
   The physical prototypes folder contains images of how the housing has developed over time. It emphasizes the process of ideation.
 
-- [version 1](https://github.com/psword/arduino-ide/tree/main/Water%20Quality%20Measuring%20Project/version%201)
+- [version 1 (beginner code)](https://github.com/psword/arduino-ide/tree/main/Water%20Quality%20Measuring%20Project/version%201)
 
   This was completed based on required assignments in my degree program module. The emphasis for this version was on learning.
 
-- [version 2](https://github.com/psword/arduino-ide/tree/main/Water%20Quality%20Measuring%20Project/version%202)
+- [version 2 (improved beginner code)](https://github.com/psword/arduino-ide/tree/main/Water%20Quality%20Measuring%20Project/version%202)
 
   This version is in progress and will develop into code that will support a working, deployable prototype.
   
