@@ -82,6 +82,7 @@ Below is a summary of qualifications that have evolved within the last year. The
   - Use machine vision to enhance the concept of measuring turbidity
   - Implement machine learning to predict based on the small changes between photos
   - This (machine vision with turbidity tube) could be a separate physical unit
+  - Measure depth of sight from surface down (if this is possible)
 
 ### :pencil:Project Folders
 
