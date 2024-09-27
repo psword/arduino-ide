@@ -98,11 +98,11 @@ Below is a summary of qualifications that have evolved within the last year. The
 
   The physical prototypes folder contains images of how the housing has developed over time. It emphasizes the process of ideation.
 
-- [version 1 (beginner code)](https://github.com/psword/arduino-ide/tree/main/Water%20Quality%20Measuring%20Project/version%201)
+- [version 1 (testing code)](https://github.com/psword/arduino-ide/tree/main/Water%20Quality%20Measuring%20Project/version%201)
 
   This was completed based on required assignments in my degree program module. The emphasis for this version was on learning.
 
-- [version 2 (improved beginner code)](https://github.com/psword/arduino-ide/tree/main/Water%20Quality%20Measuring%20Project/version%202)
+- [version 2 (testing code)](https://github.com/psword/arduino-ide/tree/main/Water%20Quality%20Measuring%20Project/version%202)
 
   This version is in progress and will develop into code that will support a working, deployable prototype.
   
