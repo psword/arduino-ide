@@ -2,7 +2,23 @@ Directory containing photos of further developed concepts. (fourth iteration)
 
 This version will quickly develop into the prototype that we can deploy. In the photos with the PVC, I assembled it quickly, and I'm guessing it is about a 75% representation of the final result. Again, the focus is not simply on what might work, but also on the iterative design process.
 
-Fully assembled example using PVC pipe - the final version will have 3D printed parts
+## __Current Samples__
+
+Flat View - Latest Test Assembly using 3D printed parts (concept to be produced)
+
+![Concept Assembly](ExampleAssembly2.JPEG)
+
+Top View - Latest Test Assembly using 3D printed parts (concept to be produced)
+
+![Concept Assembly](ExampleAssembly3.JPEG)
+
+-----
+
+## __Previous Samples Below__
+
+-----
+
+Fully assembled example using PVC pipe - the final version will have 3D-printed parts
 
 ![Fully assembled example](Assembly1.JPEG)
 
