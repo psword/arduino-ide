@@ -24,7 +24,7 @@
 #define S_TO_MIN_FACTOR 60        // Conversion factor for seconds to minutes
 
 // Sleep and boot settings
-#define TIME_TO_SLEEP 10           // Time to sleep in minutes, should be the same as all other modules
+#define TIME_TO_SLEEP 2           // Time to sleep in minutes, should be the same as all other modules
 #define BOOT_THRESHOLD 2          // Number of boots before data transmission
 
 // Other definitions
@@ -50,7 +50,7 @@ bool flag = false;                // Cloud transmission flag
 RTC_DATA_ATTR float receivedFloatTemp; // Received temperature value
 RTC_DATA_ATTR float receivedFloatTds;  // Received TDS (Total Dissolved Solids) value
 RTC_DATA_ATTR float receivedFloatpH;   // Received pH value
-RTC_DATA_ATTR bool isFirstBoot = true; // Flag to check if it's the first boot after deep sleep
+RTC_DATA_ATTR bool isFirstBoot = false; // Flag to check if it's the first boot after deep sleep
 RTC_DATA_ATTR uint16_t bootCounter = 0; // Counter to track the number of boots
 
 // Uptime tracking variables
@@ -109,7 +109,7 @@ void setup()
             uint64_t sleepMillis = TIME_TO_SLEEP * S_TO_MIN_FACTOR * mS_TO_S_FACTOR;
             addSleepMillis(sleepMillis);
         }
-        
+
         // Update the uptime with the current running time
         updateUptime();
 
@@ -117,20 +117,25 @@ void setup()
         bootCounter++;
         Serial.print("Boot Counter : ");
         Serial.println(bootCounter);
-    } else {
-        // Handle the first boot case
-        isFirstBoot = false;
-        Serial.println("First boot. Initializing uptime...");
+    } 
+    // else {
+    //     // Handle the first boot case
+    //     isFirstBoot = false;
+    //     Serial.println("First boot. Initializing uptime...");
 
-        // Initialize uptime on the first boot
-        updateUptime();
+    //     // Initialize uptime on the first boot
+    //     updateUptime();
 
-        Serial.println("First boot. Entering deep sleep...");
-        // Enable the timer to wake up from deep sleep
-        esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * S_TO_MIN_FACTOR * uS_TO_S_FACTOR);
-        esp_deep_sleep_start(); // Enter deep sleep mode
-    }
+    //     // Delay to ensure stability before entering deep sleep
+    //     delay(500);
+
+    //     Serial.println("First boot. Entering deep sleep...");
+    //     // Enable the timer to wake up from deep sleep
+    //     esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * S_TO_MIN_FACTOR * uS_TO_S_FACTOR);
+    //     esp_deep_sleep_start(); // Enter deep sleep mode
+    //}
 }
+
 
 void loop()
 {
