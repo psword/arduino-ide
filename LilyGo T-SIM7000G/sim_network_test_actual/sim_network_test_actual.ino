@@ -25,7 +25,7 @@
 #define GSM_PIN ""
 
 // Your GPRS credentials, if any
-const char apn[]  = "prepaid.dna.fi";     //SET TO YOUR APN (elisa)"internet"
+const char apn[]  = "prepaid.dna.fi";     //SET TO YOUR APN (elisa = "internet")
 const char gprsUser[] = "";
 const char gprsPass[] = "";
 
