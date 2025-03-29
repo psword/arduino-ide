@@ -1,3 +1,8 @@
+// https://github.com/GreenPonik/DFRobot_ESP_PH_BY_GREENPONIK
+// to enter calibration mode, type 'enterph'
+// once the reading is stable, type 'calph'
+// to save and exit, type 'exitph'
+
 
 #include "DFRobot_ESP_PH.h"
 #include <EEPROM.h>
@@ -6,7 +11,7 @@ DFRobot_ESP_PH ph;
 #define ESPADC 4096.0   //the esp Analog Digital Convertion value
 #define ESPVOLTAGE 3300 //the esp voltage supply value
 #define PH_PIN 13		//the esp gpio data pin number
-float voltage, phValue, temperature = 23.81;
+float voltage, phValue, temperature = 20.5;
 
 void setup()
 {
